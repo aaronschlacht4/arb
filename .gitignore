@@ -1,0 +1,26 @@
+# Secrets — never commit API keys
+.env
+*.env
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Data: keep the folders (via .gitkeep) but not the large datasets
+# (comment these out if you DO want to version the data)
+data/raw/*.jsonl
+data/clean/*.csv
+*.log
+*.checkpoint.json
+!data/**/.gitkeep
+
+# Delivery bundles (large, derived — regenerate from scripts, don't version)
+delivery*/
+*.zip
+*.gz
+
+# OS / editor
+.DS_Store
+.ipynb_checkpoints/
