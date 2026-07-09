@@ -1,0 +1,15 @@
+{
+  "slug": "presidential-2024",
+  "name": "Will Donald Trump win the 2024 US Presidential Election?",
+  "kalshi_ticker": "PRES-2024-DJT",
+  "polymarket_condition_id": "0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917",
+  "polymarket_exchange": "0xc5d563a36ae78145c45a50134d48a1215220f80a",
+  "polymarket_token_ids": [
+    "21742633143463906290569050155826241533067272736897614950488156847949938836455",
+    "48331043336612883890938759509493159234755048973500640148014422747788308965732"
+  ],
+  "polymarket_event_slug": "presidential-election-winner-2024",
+  "window_seconds": 300,
+  "resolution": "YES",
+  "notes": "Trump market within the multi-candidate 2024 presidential event (neg-risk). Kalshi DJT = Donald J. Trump. Resolved YES 2024-11-05. Polymarket volume ~$1.53B."
+}

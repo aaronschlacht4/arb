@@ -1,0 +1,17 @@
+{
+  "slug": "mamdani-dem-nomination",
+  "name": "Will Zohran Mamdani win the Dem nomination for NYC Mayor?",
+  "kalshi_ticker": "KXMAYORNYCNOMD-25-ZM",
+  "polymarket_condition_id": "0x6220c4164a293367cd40eba018dd6e67c78e4d48e74158845cc9361230bcb34d",
+  "polymarket_exchange": "0xc5d563a36ae78145c45a50134d48a1215220f80a",
+  "polymarket_token_ids": [
+    "73817598408230683831072353847770809458837920203753987347670649717002095543451",
+    "102505737677514435038431832532030540090751572260157019042399710777845176913904"
+  ],
+  "polymarket_event_slug": "who-will-win-dem-nomination-for-nyc-mayor",
+  "poly_start_block": 66069504,
+  "poly_end_block": 73352394,
+  "window_seconds": 300,
+  "resolution": "YES",
+  "notes": "Mamdani market within the multi-candidate Dem-nomination event (neg-risk exchange). Kalshi ZM = Zohran Mamdani nomination."
+}

@@ -1,0 +1,15 @@
+{
+  "slug": "mamdani-nyc-mayor",
+  "name": "Will Zohran Mamdani win the NYC Mayor race?",
+  "kalshi_ticker": "KXMAYORNYCPARTY-25-D",
+  "polymarket_condition_id": "0xebddfcf7b4401dade8b4031770a1ab942b01854f3bed453d5df9425cd9f211a9",
+  "polymarket_exchange": "0xc5d563a36ae78145c45a50134d48a1215220f80a",
+  "polymarket_token_ids": [
+    "33945469250963963541781051637999677727672635213493648594066577298999471399137",
+    "105832362350788616148612362642992403996714020918558917275151746177525518770551"
+  ],
+  "window_seconds": 300,
+  "start_ts": 1750824000,
+  "resolution": "YES",
+  "notes": "Reference outputs from Wendy's arbitrage.py live in reference/. Resolution YES = Mamdani won (2025-11-04)."
+}

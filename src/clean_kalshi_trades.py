@@ -22,21 +22,16 @@ FIELD SEMANTICS (identical meaning across venues):
                       yes_price_dollars. This is the column to compare across
                       venues (= implied probability the event happens).
 
-Run:
-    python src/clean_kalshi_trades.py KXMAYORNYCPARTY-25-D
+Run (event-driven — ticker + paths from events/<slug>/event.json):
+    python src/clean_kalshi_trades.py mamdani-dem-nomination
 """
 
 import argparse
 import csv
 import json
 from datetime import datetime, timezone
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
-CLEAN_DIR = PROJECT_ROOT / "data" / "clean"
-
-DEFAULT_TICKER = "KXMAYORNYCPARTY-25-D"
+from eventlib import load_event
 
 # Shared cross-venue schema (must stay identical in clean_polymarket_*.py).
 FIELDS = [
@@ -80,12 +75,12 @@ def clean_row(t: dict) -> dict:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Clean raw Kalshi trades into a trade-level CSV.")
-    ap.add_argument("ticker", nargs="?", default=DEFAULT_TICKER)
+    ap.add_argument("event", help="Event slug, e.g. mamdani-dem-nomination")
     args = ap.parse_args()
 
-    raw_path = RAW_DIR / f"kalshi_trades_{args.ticker}.jsonl"
-    clean_path = CLEAN_DIR / f"kalshi_trades_{args.ticker}.csv"
-    CLEAN_DIR.mkdir(parents=True, exist_ok=True)
+    ev = load_event(args.event)
+    raw_path = ev.kalshi_raw_jsonl
+    clean_path = ev.kalshi_clean_csv
     if not raw_path.exists():
         raise SystemExit(f"Raw file not found: {raw_path}")
 

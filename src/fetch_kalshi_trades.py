@@ -12,8 +12,8 @@ Key facts we verified empirically before writing this:
   - Trades come newest -> oldest. Page size max is 1000.
   - No authentication is required to read trades.
 
-Run:
-    python src/fetch_kalshi_trades.py KXMAYORNYCPARTY-25-D
+Run (event-driven — ticker + output path come from events/<slug>/event.json):
+    python src/fetch_kalshi_trades.py mamdani-dem-nomination
 """
 
 import argparse
@@ -24,12 +24,10 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
+from eventlib import load_event
+
 BASE_URL = "https://api.elections.kalshi.com/trade-api/v2"
 HISTORICAL_TRADES_URL = f"{BASE_URL}/historical/trades"
-
-# Where raw files live. Resolved relative to the project root (this file's parent's parent).
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
 
 
 def fetch_page(ticker: str, cursor: str | None, limit: int = 1000) -> dict:
@@ -57,13 +55,19 @@ def fetch_page(ticker: str, cursor: str | None, limit: int = 1000) -> dict:
                 time.sleep(1.5 * (attempt + 1))
                 continue
             raise  # 4xx other than 429 is a real bug (bad params) — surface it.
+        except (OSError, json.JSONDecodeError) as e:
+            # read timeout / connection reset / truncated body — transient, retry.
+            last_err = e
+            time.sleep(1.5 * (attempt + 1))
+            continue
     raise RuntimeError(f"Gave up after retries on {url}: {last_err}")
 
 
-def collect(ticker: str, limit: int = 1000, sleep_s: float = 0.2) -> Path:
+def collect(ticker: str, out_path: Path, limit: int = 1000,
+            sleep_s: float = 0.2) -> Path:
     """
     Page through ALL historical trades for `ticker` and write them to
-    data/raw/kalshi_trades_<ticker>.jsonl, one raw trade object per line.
+    `out_path`, one raw trade object per line.
 
     Validation built in:
       - ticker match: every row's `ticker` must equal the requested ticker,
@@ -71,7 +75,6 @@ def collect(ticker: str, limit: int = 1000, sleep_s: float = 0.2) -> Path:
       - dedup: skip any repeated `trade_id` (cursor paging should not repeat,
         but we verify rather than assume).
     """
-    out_path = RAW_DIR / f"kalshi_trades_{ticker}.jsonl"
     if out_path.exists():
         # Rule 3: never silently overwrite raw data.
         raise SystemExit(f"Refusing to overwrite existing raw file: {out_path}")
@@ -116,11 +119,14 @@ def collect(ticker: str, limit: int = 1000, sleep_s: float = 0.2) -> Path:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Download complete Kalshi historical trades for a market.")
-    parser.add_argument("ticker", help="Market ticker, e.g. KXMAYORNYCPARTY-25-D")
+    parser = argparse.ArgumentParser(description="Download complete Kalshi historical trades for an event's market.")
+    parser.add_argument("event", help="Event slug, e.g. mamdani-dem-nomination")
     parser.add_argument("--limit", type=int, default=1000, help="Page size (max 1000)")
     args = parser.parse_args()
-    collect(args.ticker, limit=args.limit)
+    ev = load_event(args.event)
+    print(f"Fetching Kalshi trades for {ev.kalshi_ticker} -> {ev.kalshi_raw_jsonl}",
+          file=sys.stderr)
+    collect(ev.kalshi_ticker, ev.kalshi_raw_jsonl, limit=args.limit)
 
 
 if __name__ == "__main__":

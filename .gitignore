@@ -8,13 +8,13 @@ __pycache__/
 .venv/
 venv/
 
-# Data: keep the folders (via .gitkeep) but not the large datasets
-# (comment these out if you DO want to version the data)
-data/raw/*.jsonl
-data/clean/*.csv
+# Per-event bulk data: raw acquisitions and clean tapes are too large for
+# GitHub (up to 550MB) and fully regenerable via src/fetch_* + src/clean_*.
+# Everything else in events/ IS versioned: event.json, results/, reference/.
+events/*/raw/
+events/*/clean/
 *.log
 *.checkpoint.json
-!data/**/.gitkeep
 
 # Delivery bundles (large, derived — regenerate from scripts, don't version)
 delivery*/

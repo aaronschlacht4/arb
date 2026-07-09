@@ -14,27 +14,16 @@ our TAKER-perspective convention is verified during the rpc-vs-subgraph
 reconciliation (shared tx_hash). Left as the subgraph's value, upper-cased, until
 then.
 
-Run:
-    python src/clean_polymarket_subgraph.py
+Run (event-driven — condition/tokens/paths from events/<slug>/event.json):
+    python src/clean_polymarket_subgraph.py mamdani-dem-nomination
 """
 
 import csv
 import json
+import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
-RAW_DIR = PROJECT_ROOT / "data" / "raw"
-CLEAN_DIR = PROJECT_ROOT / "data" / "clean"
-
-CONDITION_ID = "0xebddfcf7b4401dade8b4031770a1ab942b01854f3bed453d5df9425cd9f211a9"
-EXCHANGE = "0xc5d563a36ae78145c45a50134d48a1215220f80a"
-YES_TOKEN = "33945469250963963541781051637999677727672635213493648594066577298999471399137"
-NO_TOKEN = "105832362350788616148612362642992403996714020918558917275151746177525518770551"
-TOKEN_NAME = {YES_TOKEN: "YES", NO_TOKEN: "NO"}
-
-RAW_PATH = RAW_DIR / f"polymarket_subgraph_orderfilled_{CONDITION_ID}.jsonl"
-CLEAN_PATH = CLEAN_DIR / f"polymarket_subgraph_trades_{CONDITION_ID}.csv"
+from eventlib import load_event
 
 # Shared cross-venue schema (must stay identical in clean_kalshi_trades.py).
 FIELDS = [
@@ -44,16 +33,16 @@ FIELDS = [
 ]
 
 
-def decode(rec: dict) -> dict | None:
+def decode(rec: dict, exchange: str, token_name: dict) -> dict | None:
     """One enrichedOrderFilled record -> a trade row, or None if it's the aggregate."""
     taker = rec["taker"]["id"]
-    if taker == EXCHANGE:
+    if taker == exchange:
         return None  # aggregate taker-order row — drop (matches rpc policy)
 
     ts = int(rec["timestamp"])
     price = round(float(rec["price"]), 6)
     quantity = int(rec["size"]) / 1e6  # size is a 6-decimal token amount
-    outcome = TOKEN_NAME.get(rec["market"], rec["market"])
+    outcome = token_name.get(rec["market"], rec["market"])
     yes_price = price if outcome == "YES" else round(1 - price, 6)
     return {
         "venue": "polymarket",
@@ -74,16 +63,22 @@ def decode(rec: dict) -> dict | None:
 
 
 def main() -> None:
-    CLEAN_DIR.mkdir(parents=True, exist_ok=True)
-    if not RAW_PATH.exists():
-        raise SystemExit(f"Raw file not found: {RAW_PATH}")
+    ev = load_event(sys.argv[1] if len(sys.argv) > 1 else None)
+    if len(ev.poly_token_ids) < 2:
+        raise SystemExit("event.json needs polymarket_token_ids: [YES, NO]")
+    exchange = ev.poly_exchange
+    token_name = {ev.poly_token_ids[0]: "YES", ev.poly_token_ids[1]: "NO"}
+    raw_path = ev.poly_subgraph_raw_jsonl
+    clean_path = ev.poly_subgraph_clean_csv
+    if not raw_path.exists():
+        raise SystemExit(f"Raw file not found: {raw_path}")
 
     n_recs = n_agg = 0
     rows = []
-    with RAW_PATH.open() as f:
+    with raw_path.open() as f:
         for line in f:
             n_recs += 1
-            out = decode(json.loads(line))
+            out = decode(json.loads(line), exchange, token_name)
             if out is None:
                 n_agg += 1
             else:
@@ -91,7 +86,7 @@ def main() -> None:
 
     rows.sort(key=lambda r: (r["unix_ts"], r["trade_id"]))
 
-    with CLEAN_PATH.open("w", newline="") as f:
+    with clean_path.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS)
         w.writeheader()
         w.writerows(rows)
@@ -101,7 +96,7 @@ def main() -> None:
     vol = sum(r["notional_usd"] for r in rows)
     print(f"subgraph records read : {n_recs:,}")
     print(f"  aggregate (dropped) : {n_agg:,}")
-    print(f"clean trades written  : {len(rows):,}  -> {CLEAN_PATH}")
+    print(f"clean trades written  : {len(rows):,}  -> {clean_path}")
     print(f"  by outcome          : {dict(by_outcome)}")
     if rows:
         print(f"  date range          : {rows[0]['timestamp'][:10]} .. {rows[-1]['timestamp'][:10]}")
