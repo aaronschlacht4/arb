@@ -48,8 +48,11 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36",
 }
 
-PAGE = 50  # small pages: the `market` filter is weakly indexed and larger
-           # pages trip the subgraph's Postgres statement-timeout for some markets.
+# Page size. Some markets (e.g. the NYC-nomination one) trip the subgraph's
+# Postgres statement-timeout above ~50; others (e.g. presidential-2024) handle
+# 1000 fine. Default 50 (safe); override per-run with SUBGRAPH_PAGE=1000.
+import os
+PAGE = int(os.environ.get("SUBGRAPH_PAGE", "50"))
 
 QUERY = """
 query($market: String!, $lastId: String!, $first: Int!) {

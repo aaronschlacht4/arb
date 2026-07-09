@@ -121,12 +121,15 @@ def main() -> None:
     ap.add_argument("--start", type=int, help="start block (else event.json poly_start_block)")
     ap.add_argument("--end", type=int, help="end block (else event.json poly_end_block)")
     ap.add_argument("--span", type=int, default=10_000, help="initial block chunk size")
+    ap.add_argument("--suffix", default="", help="output-file suffix for parallel range workers (e.g. .part2)")
     args = ap.parse_args()
 
     ev = load_event(args.event)
     exchange = ev.poly_exchange
     token_hex = {f"{int(t):064x}" for t in ev.poly_token_ids}
     out_path = ev.poly_rpc_raw_jsonl
+    if args.suffix:
+        out_path = out_path.with_name(out_path.stem + args.suffix + ".jsonl")
     ckpt_path = out_path.with_suffix(".checkpoint.json")
 
     start_block = args.start or ev.cfg.get("poly_start_block")
