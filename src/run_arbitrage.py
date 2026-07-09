@@ -49,7 +49,8 @@ def load(ev):
                           "id": r["id"], "side": r["side"], "osz": size})
             else:
                 tx, li = _poly_sort_key(r["id"])
-                P.append({"t": ts, "yes": yes, "no": no,
+                # 3dp rounding is part of the verified methodology (see merge)
+                P.append({"t": ts, "yes": round(yes, 3), "no": round(no, 3),
                           "sz": size, "id": r["id"], "tx": tx, "li": li,
                           "side": r["side"], "osz": size})
     K.sort(key=lambda x: (x["t"], x["id"]))

@@ -47,7 +47,7 @@ def main() -> None:
                 "side": r["outcome"].lower(),
                 "size": float(r["quantity"]),
                 "yes_price": yes,
-                "no_price": 1.0 - yes,
+                "no_price": round(1.0 - yes, 6),  # avoid float artifacts (0.92999…)
             })
 
     # --- Polymarket (prefer RPC tape for true logIndex; else subgraph) ---
@@ -62,7 +62,10 @@ def main() -> None:
             if size <= 0:
                 n_dropped += 1
                 continue
-            yes = float(r["yes_price"])  # full precision (no rounding)
+            # Wendy's prep rounds poly yes to 3dp BEFORE the arb test — this is
+            # part of the verified methodology (chain prices like 0.90899999842
+            # must compare as 0.909, else the |gap| >= 1e-4 test misfires).
+            yes = round(float(r["yes_price"]), 3)
             rows.append({
                 "timestamp": int(r["unix_ts"]),
                 "id": poly_id(r),
@@ -70,7 +73,7 @@ def main() -> None:
                 "side": r["outcome"].upper(),
                 "size": float(size),
                 "yes_price": yes,
-                "no_price": 1.0 - yes,
+                "no_price": round(1.0 - yes, 3),
             })
 
     rows.sort(key=lambda x: (x["timestamp"], str(x["id"])))
