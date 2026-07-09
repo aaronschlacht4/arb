@@ -37,10 +37,11 @@ class Event:
         self.poly_event_slug = cfg.get("polymarket_event_slug")
         self.window_seconds = int(cfg.get("window_seconds", 300))
         self.resolution = cfg.get("resolution")  # "YES" | "NO" | None
-        # Optional inclusive start cutoff: trades with unix ts < start_ts are
+        # Optional cutoffs: trades with ts < start_ts or ts > end_ts are
         # excluded from the arbitrage match (e.g. isolate the mayoral race from
-        # the primary period). None = no cutoff.
+        # the primary period; exclude post-result price chaos). None = no cutoff.
         self.start_ts = cfg.get("start_ts")
+        self.end_ts = cfg.get("end_ts")
 
     # --- directories ---
     @property

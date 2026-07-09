@@ -36,10 +36,13 @@ def _poly_sort_key(id_str: str):
 def load(ev):
     K, P = [], []
     cutoff = ev.start_ts
+    end = ev.end_ts
     with ev.merged_csv.open(encoding="utf-8") as f:
         for r in csv.DictReader(f):
             ts = int(r["timestamp"])
             if cutoff is not None and ts < cutoff:
+                continue
+            if end is not None and ts > end:
                 continue
             yes = float(r["yes_price"])
             no = float(r["no_price"])

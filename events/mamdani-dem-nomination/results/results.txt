@@ -1,11 +1,11 @@
-Poly yes tokens: 2410054.0
-Poly no tokens: 2558030.0
-Poly cash: 2110505.081000009
-Poly earnings: 299548.9189999909
+Poly yes tokens: 1062583.0
+Poly no tokens: 823034.0
+Poly cash: 825245.0230000019
+Poly earnings: 237337.9769999981
 
-Kalshi yes tokens: 2558030.0
-Kalshi no tokens: 2410054.0
-Kalshi cash: 2761913.2100000577
-Kalshi earnings: -203883.2100000577
+Kalshi yes tokens: 823034.0
+Kalshi no tokens: 1062583.0
+Kalshi cash: 1031992.350000009
+Kalshi earnings: -208958.35000000906
 
-Net: 95665.70899993321
+Net: 28379.626999989036
