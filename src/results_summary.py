@@ -1,9 +1,22 @@
 """
-Simple per-venue results summary from an event's arbitrage_final.csv.
+Per-venue results summary from an event's arbitrage_final.csv, using the
+two-variable cash+position model (see portfolio.py).
 
-For each venue: YES/NO tokens matched, cash deployed, and settled earnings under
-the event's resolution (winning-outcome tokens pay $1), plus the net. Writes
-events/<slug>/results/results.txt.
+Each venue is one (y, z) pair — cash and net signed YES-equivalent
+contracts; NO purchases are folded in as YES shorts at ingestion, so there
+is no separate YES/NO holding anywhere. The event's resolution supplies
+the terminal YES price (YES -> 1.0, NO -> 0.0):
+  market_value = y + z * yes_price
+  net          = poly_market_value + kalshi_market_value
+
+Per venue the report shows:
+  tokens   — z, the net YES-equivalent position (negative = short YES)
+  expense  — total cash paid for contracts (actual outflow)
+  payback  — settlement receipts (winning contracts pay $1)
+  earnings — payback - expense (equals y + z*settle)
+  net      — y + z*settle from the model
+Then the overall Net. The hedge check (|z_poly| vs |z_kalshi|) runs as a
+stdout diagnostic. Writes events/<slug>/results/results.txt.
 
 Run:
     python src/results_summary.py mamdani-nyc-mayor
@@ -12,47 +25,53 @@ import csv
 import sys
 
 from eventlib import load_event
+from portfolio import Portfolio
 
 
 def main() -> None:
     ev = load_event(sys.argv[1] if len(sys.argv) > 1 else None)
     res = (ev.resolution or "YES").upper()
+    settle_yes = 1.0 if res == "YES" else 0.0
 
-    p_yes = p_no = k_yes = k_no = 0.0
-    p_cash = k_cash = 0.0
+    pf = Portfolio()
+    # cash-flow counters for reporting (valuation itself is just (y, z))
+    flow = {"poly": {"expense": 0.0, "payback": 0.0},
+            "kalshi": {"expense": 0.0, "payback": 0.0}}
+
     for r in csv.DictReader(ev.arb_final_csv.open(encoding="utf-8")):
         sz = int(r["arb_size"])
-        if r["poly_side"] == "YES":
-            p_yes += sz
-            p_cash += float(r["poly_yes"]) * sz
-        else:
-            p_no += sz
-            p_cash += float(r["poly_no"]) * sz
-        if r["kalshi_side"] == "YES":
-            k_yes += sz
-            k_cash += float(r["kalshi_yes"]) * sz
-        else:
-            k_no += sz
-            k_cash += float(r["kalshi_no"]) * sz
+        for venue, pos, side_col, yes_col, no_col in (
+                ("poly", pf.poly, "poly_side", "poly_yes", "poly_no"),
+                ("kalshi", pf.kalshi, "kalshi_side", "kalshi_yes", "kalshi_no")):
+            if r[side_col] == "YES":
+                price = float(r[yes_col])
+                pos.buy_yes(sz, price)
+                if res == "YES":
+                    flow[venue]["payback"] += sz
+            else:
+                price = float(r[no_col])
+                pos.buy_no(sz, price)
+                if res == "NO":
+                    flow[venue]["payback"] += sz
+            flow[venue]["expense"] += sz * price
 
-    # settled: the resolved outcome's tokens each pay $1
-    p_earn = (p_yes if res == "YES" else p_no) - p_cash
-    k_earn = (k_yes if res == "YES" else k_no) - k_cash
-    net = p_earn + k_earn
+    if not pf.is_hedged:  # diagnostic only, never expected on matched output
+        print(f"WARNING: unmatched exposure |z_poly| - |z_kalshi| = {pf.hedge_delta}")
 
-    lines = [
-        f"Poly yes tokens: {p_yes}",
-        f"Poly no tokens: {p_no}",
-        f"Poly cash: {p_cash}",
-        f"Poly earnings: {p_earn}",
-        "",
-        f"Kalshi yes tokens: {k_yes}",
-        f"Kalshi no tokens: {k_no}",
-        f"Kalshi cash: {k_cash}",
-        f"Kalshi earnings: {k_earn}",
-        "",
-        f"Net: {net}",
-    ]
+    lines = []
+    for label, venue, pos in (("Poly", "poly", pf.poly),
+                              ("Kalshi", "kalshi", pf.kalshi)):
+        f = flow[venue]
+        lines += [
+            f"{label} tokens: {pos.z}",
+            f"{label} expense: {f['expense']}",
+            f"{label} payback: {f['payback']}",
+            f"{label} earnings: {f['payback'] - f['expense']}",
+            f"{label} net: {pos.value(settle_yes)}",
+            "",
+        ]
+    lines.append(f"Net: {pf.net_value(settle_yes, settle_yes)}")
+
     out = ev.results_dir / "results.txt"
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))

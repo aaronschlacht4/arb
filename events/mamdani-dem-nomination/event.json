@@ -12,7 +12,8 @@
   "poly_start_block": 66069504,
   "poly_end_block": 73352394,
   "window_seconds": 300,
-  "end_ts": 1750781027,
+  "start_ts": 1735794000,
+  "end_ts": 1750737600,
   "resolution": "YES",
   "notes": "Mamdani market within the multi-candidate Dem-nomination event (neg-risk exchange). Kalshi ZM = Zohran Mamdani nomination."
 }

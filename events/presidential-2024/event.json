@@ -9,6 +9,8 @@
     "48331043336612883890938759509493159234755048973500640148014422747788308965732"
   ],
   "polymarket_event_slug": "presidential-election-winner-2024",
+  "poly_start_block": 51909481,
+  "poly_end_block": 64053541,
   "window_seconds": 300,
   "resolution": "YES",
   "notes": "Trump market within the multi-candidate 2024 presidential event (neg-risk). Kalshi DJT = Donald J. Trump. Resolved YES 2024-11-05. Polymarket volume ~$1.53B."

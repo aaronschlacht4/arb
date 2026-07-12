@@ -24,3 +24,6 @@ delivery*/
 # OS / editor
 .DS_Store
 .ipynb_checkpoints/
+
+# Presidential merged tape exceeds GitHub 100MB cap; regenerate via merge_for_arb.py
+events/presidential-2024/results/merged_sorted_for_arb.csv

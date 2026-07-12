@@ -1,11 +1,13 @@
-Poly yes tokens: 1062583.0
-Poly no tokens: 823034.0
-Poly cash: 825245.0230000019
-Poly earnings: 237337.9769999981
+Poly tokens: 315335.0
+Poly expense: 742512.8200000012
+Poly payback: 1011021.0
+Poly earnings: 268508.17999999877
+Poly net: 268508.1800000006
 
-Kalshi yes tokens: 823034.0
-Kalshi no tokens: 1062583.0
-Kalshi cash: 1031992.350000009
-Kalshi earnings: -208958.35000000906
+Kalshi tokens: -315335.0
+Kalshi expense: 938260.5600000072
+Kalshi payback: 695686.0
+Kalshi earnings: -242574.56000000716
+Kalshi net: -242574.5599999997
 
-Net: 28379.626999989036
+Net: 25933.62000000087
