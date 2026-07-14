@@ -31,10 +31,10 @@ and `clean_polymarket_*.py` must keep `FIELDS` identical.
 | `unix_ts` | seconds since epoch | from block time | from `created_time` |
 | `trade_id` | unique trade id | `<tx_hash>:<log_index>` (rpc) / `<tx>_<orderHash>` (subgraph) | Kalshi `trade_id` |
 | `outcome` | contract that traded; **YES = the event happens** (Mamdani/Dem wins) | YES/NO token | `taker_outcome_side` |
-| `side` | **taker (aggressor)** BUY/SELL of `outcome` | maker-side flipped to taker | `taker_book_side`: ask→BUY, bid→SELL |
+| `side` | **taker (aggressor)** direction on `outcome` | maker-side flipped to taker: BUY/SELL | **always `BUY`** — see note below |
 | `price` | 0–1, price of the traded `outcome` contract | USDC/token | `yes_price` or `no_price` |
-| `quantity` | shares (PM) / contracts (Kalshi) | token amt ÷1e6 | `count_fp` |
-| `notional_usd` | `price × quantity` (USD changed hands) | = USDC amount ÷1e6 | computed |
+| `quantity` | shares (PM) / contracts (Kalshi) | rpc: token amt ÷1e6 · **subgraph: `(size÷1e6) ÷ price`** | `count_fp` |
+| `notional_usd` | USD that changed hands | rpc: USDC amt ÷1e6 · **subgraph: `size ÷ 1e6`** | `price × quantity` |
 | `yes_price` | **0–1, canonical implied P(event)** — the cross-venue compare column | `price` if YES else `1−price` | `yes_price_dollars` |
 | `tx_hash` | on-chain tx (PM only) | `transactionHash` | *(blank)* |
 | `maker` | resting-order owner (PM only) | topic[2] addr | *(blank)* |
@@ -43,6 +43,57 @@ and `clean_polymarket_*.py` must keep `FIELDS` identical.
 
 **To compare venues:** use `yes_price` (both are implied P(event), 0–1). `price`
 is the literal traded-contract price, which for a NO trade is `1 − yes_price`.
+
+### Subgraph `enrichedOrderFilled.size` is USDC, not shares (corrected 2026-07-12)
+
+**`size` is the COLLATERAL (USDC, 6-dec) leg of the fill — not the share count.**
+So `notional_usd = size/1e6` and `quantity = (size/1e6) / price`. The earlier code
+read `size` as shares and derived `notional = price × size`, getting *both* columns
+wrong (quantity off by a factor of `price`, notional by `price²`).
+
+Established, not assumed:
+- `sum(size)/1e6` over all rows for a token reproduces the subgraph's own
+  `orderbook.scaledCollateralVolume` at ratio **1.000** (YES $54,352,060; NO
+  $54,252,147) — i.e. it is collateral.
+- On-chain check via the raw `orderFilledEvent` entity, tx `0x294d4e57…84fc`:
+  a fill where the maker **gave USDC** ($870 ↔ 3,000 shares @0.29) has enriched
+  `size` = 870,000,000; a fill in the same tx where the maker **gave tokens**
+  (500 shares ↔ $355 @0.71) has enriched `size` = 355,000,000 — *still* the USDC
+  leg. So `size` is always collateral, whichever asset the maker supplied.
+- Reconstructed shares match Polymarket's public data-api exactly (355/0.71 = 500).
+
+Sanity anchor: the corrected clean tape for the Trump popular-vote market sums to
+**$54.7M** of maker-fill USDC volume, ≈ half of the $108.6M `scaledCollateralVolume`
+(which counts the dropped aggregate rows too).
+
+**`side` on a maker-fill row is the MAKER's side** — flip it to get our taker
+(aggressor) convention. Verified on 434 trades matched to the public data-api by
+`(tx, token)`: flipped agrees 434/434, un-flipped 0/434.
+
+This affects the **subgraph** cleaner only. `clean_polymarket_rpc.py` reads the
+asset ids straight from the log and was already correct.
+
+### Why Kalshi `side` is always `BUY` (corrected 2026-07-12)
+
+Kalshi's public trade feed **has no buy/sell field and cannot have one**. Per the
+API docs, `taker_outcome_side` is the outcome the taker is *positioned for* —
+*"buy-yes and sell-no produce 'yes'; buy-no and sell-yes produce 'no'"* — so the
+two directions are folded into one record. And `taker_book_side` is merely a
+restatement of it: *"'bid' is equivalent to taker_outcome_side 'yes'; 'ask' is
+equivalent to taker_outcome_side 'no'."*
+
+Confirmed empirically: across `POPVOTE-24-R`, `POPVOTE-24-D`, `PRES-2024-DJT` and
+both `KXMAYORNYCPARTY-25` markets, only the pairs `(bid,yes)` and `(ask,no)` ever
+occur — never `(ask,yes)` or `(bid,no)`. The fields are perfectly collinear.
+
+The previous rule (`ask→BUY, bid→SELL`) therefore recovered **no** direction: it
+silently re-encoded `outcome`, tagging every YES trade "SELL" and every NO trade
+"BUY". Corrected to: the Kalshi taker always **acquires** `outcome`, so `side` is
+always `BUY` and `outcome` carries the direction. A Polymarket "SELL YES" is the
+same economic event as a Kalshi "BUY NO".
+
+This never affected `price`, `quantity`, `yes_price`, or the arbitrage results —
+`merge_for_arb.py` derives its own side from `outcome`, not from this column.
 
 ## Conventions
 - USDC assetId = `0`; all on-chain amounts are 6-decimal integers (÷1e6).

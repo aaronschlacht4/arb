@@ -1,0 +1,20 @@
+{
+  "slug": "popvote-2024",
+  "name": "Who wins the 2024 US popular vote? (Kalshi: Republican | Polymarket: Trump)",
+  "kalshi_ticker": "POPVOTE-24-R",
+  "polymarket_condition_id": "0xcd1b6b71a1964f15e2c14809594cbfa0d576270e8ef94c8c24913121097e09e5",
+  "polymarket_exchange": "0xc5d563a36ae78145c45a50134d48a1215220f80a",
+  "polymarket_token_ids": [
+    "42699080635179861375280720242213672850141860123562672932351602811041149946128",
+    "52646153159016006621189163812433115969858888637703551736022048114666679879653"
+  ],
+  "polymarket_event_slug": "presidential-election-popular-vote-winner-2024",
+  "polymarket_market_slug": "will-donald-trump-win-the-popular-vote-in-the-2024-presidential-election",
+  "polymarket_neg_risk_market_id": "0xfa5d43be36255764600be8bf2a29f288e6c8963c121df8400ddfe6bcbc744700",
+  "poly_start_block": 51909481,
+  "poly_end_block": 64053541,
+  "window_seconds": 300,
+  "resolution": "YES",
+  "notes": "ASYMMETRIC MAPPING - READ BEFORE USING FOR ARBITRAGE. Kalshi POPVOTE-24-R is PARTY-level ('a Republican wins the popular vote'); the POPVOTE-24 series has only -R and -D, no candidate tickers. Polymarket's 'Popular Vote Winner 2024' event (id 903216, negRisk, 17 markets) is CANDIDATE-level and has NO party market. Per user decision (2026-07-12) we map Kalshi -R to the Polymarket TRUMP market. These are NOT strictly the same contract: P(Republican wins) = Trump + Haley + DeSantis + Ramaswamy + Christie + 'any other Republican'. In practice the nomination risk is moot HERE, because Kalshi POPVOTE-24-R only began trading 2024-10-07 (Kalshi was cleared to list election contracts in early Oct 2024), long after Trump clinched. Both sides resolved YES (Trump won the popular vote, 2024-11-05). COLLECTED 2026-07-12: Kalshi 37,480 trades (2024-10-07..2025-01-06); Polymarket 365,858 raw fills -> 197,428 clean trades (2024-01-10..2024-11-11, $54.7M maker-fill USDC), reconciled exactly against subgraph orderbook.tradesQuantity (YES 204,226 / NO 161,632). MEASURED SPREAD: over the 36 overlapping days Polymarket's Trump price is ABOVE Kalshi's Republican price on 36/36 days (median gap -0.030, range -0.069..-0.008). This is the well-documented autumn-2024 Polymarket Trump premium, and it is the SAME phenomenon that drives presidential-2024 - i.e. it is the cross-venue mispricing this study measures, not an artifact of the party-vs-candidate mapping. (No Republican other than Trump could plausibly have won the popular vote, so the two contracts pay out identically in every realistic state of the world and the hedge is sound.) ARBITRAGE RESULT (window_seconds=300): 70,485 matches, Net $490,526. Treat that as an UPPER BOUND: the matcher assumes every trade was a two-sided quote, and see notes/sync_timing.md - dislocations half-life in ~97s when active while the window is 300s, and a single leg can move 3-6c inside 300s. poly_start/end_block are copied from the presidential-2024 event and are only used by the RPC scan - confirm them against subgraph timestamps before an RPC run.",
+  "poly_raw_gzip": true
+}

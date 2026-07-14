@@ -16,12 +16,41 @@ CLI convention: pass the event slug as the first argument to any stage script,
 e.g.  `python src/merge_for_arb.py mamdani-nyc-mayor`. Defaults to the single
 event if only one exists under events/.
 """
+import gzip
 import json
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 EVENTS_DIR = ROOT / "events"
+
+
+# --- optional gzip for bulky raw tapes -------------------------------------
+# Big markets (presidential-2024: 5.1M fills, ~2.8GB of JSONL) can be stored
+# gzipped. The RECORDS ARE UNCHANGED — one verbatim JSON object per line, exactly
+# as received; only the container is compressed, so Rule 3 still holds. Enable
+# per event with  "poly_raw_gzip": true  in event.json.
+
+def gz(path: Path) -> Path:
+    """The .gz sibling of a path (a.jsonl -> a.jsonl.gz)."""
+    return path.with_name(path.name + ".gz")
+
+
+def raw_path(path: Path, use_gzip: bool) -> Path:
+    """The path a raw tape actually lives at, given the gzip setting."""
+    return gz(path) if use_gzip else path
+
+
+def open_raw(path: Path, mode: str = "rt", use_gzip: bool = False):
+    """Open a raw JSONL tape, transparently gzipped when use_gzip.
+
+    Append mode works: gzip appends a new member, and readers transparently
+    stream concatenated members — so the resumable/sharded fetch is unaffected.
+    """
+    p = raw_path(path, use_gzip)
+    if p.suffix == ".gz":
+        return gzip.open(p, mode, encoding="utf-8")
+    return p.open(mode, encoding="utf-8")
 
 
 class Event:
@@ -35,6 +64,8 @@ class Event:
         self.poly_exchange = cfg.get("polymarket_exchange")
         self.poly_token_ids = cfg.get("polymarket_token_ids", [])
         self.poly_event_slug = cfg.get("polymarket_event_slug")
+        # Store the (large) Polymarket raw tape gzipped. See open_raw() above.
+        self.poly_raw_gzip = bool(cfg.get("poly_raw_gzip", False))
         self.window_seconds = int(cfg.get("window_seconds", 300))
         self.resolution = cfg.get("resolution")  # "YES" | "NO" | None
         # Optional cutoffs: trades with ts < start_ts or ts > end_ts are

@@ -1,0 +1,16 @@
+{
+  "slug": "popvote-2024-biden",
+  "name": "Biden wins the popular vote? (Polymarket, popular-vote-winner-2024 event)",
+  "kalshi_ticker": "POPVOTE-24-D",
+  "polymarket_condition_id": "0xb26fd99a7b7bae4e13c9bb3becf65353708a805f9c1aea74484d107e6ba512cd",
+  "polymarket_exchange": "0xc5d563a36ae78145c45a50134d48a1215220f80a",
+  "polymarket_token_ids": [
+    "99142454428537584544622121027442998138704969211018679231469566937962407405481",
+    "74387253965248062408790655376997458947727940927346197081424539600760059876682"
+  ],
+  "polymarket_event_slug": "presidential-election-popular-vote-winner-2024",
+  "polymarket_market_slug": "will-joe-biden-win-the-popular-vote-in-the-2024-presidential-election",
+  "window_seconds": 300,
+  "resolution": "NO",
+  "notes": "PARTIAL ACQUISITION - the raw tape here is a BOUNDED SLICE (2024-06-01..2024-09-01), collected only to timestamp the Biden->Harris candidate switch. It is NOT the complete market history, so it will NOT reconcile against subgraph orderbook.tradesQuantity; combine with --allow-partial. kalshi_ticker POPVOTE-24-D is listed for schema completeness only - Kalshi did not list POPVOTE-24 until 2024-10-07, so there is NO Kalshi data in this window. Resolved NO (Biden withdrew 2024-07-21 and was never the nominee)."
+}

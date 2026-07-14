@@ -1,0 +1,13 @@
+Poly tokens: -155136950.0
+Poly expense: 53440041.67199473
+Poly payback: 4703511.0
+Poly earnings: -48736530.67199473
+Poly net: -48736530.67199165
+
+Kalshi tokens: 155136950.0
+Kalshi expense: 106162261.21000575
+Kalshi payback: 159840461.0
+Kalshi earnings: 53678199.789994255
+Kalshi net: 53678199.78999248
+
+Net: 4941669.118000835

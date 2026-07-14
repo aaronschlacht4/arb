@@ -1,0 +1,16 @@
+{
+  "slug": "popvote-2024-kamala",
+  "name": "Kamala Harris wins the popular vote? (Polymarket, popular-vote-winner-2024 event)",
+  "kalshi_ticker": "POPVOTE-24-D",
+  "polymarket_condition_id": "0x265366ede72d73e137b2b9095a6cdc9be6149290caa295738a95e3d881ad0865",
+  "polymarket_exchange": "0xc5d563a36ae78145c45a50134d48a1215220f80a",
+  "polymarket_token_ids": [
+    "21271000291843361249209065706097167029083067325856089903026951915683588703117",
+    "43898019188443109254544011644141095748327433947336326565220861409147408981284"
+  ],
+  "polymarket_event_slug": "presidential-election-popular-vote-winner-2024",
+  "polymarket_market_slug": "will-kamala-harris-win-the-popular-vote-in-the-2024-presidential-election",
+  "window_seconds": 300,
+  "resolution": "NO",
+  "notes": "PARTIAL ACQUISITION - the raw tape here is a BOUNDED SLICE (2024-06-01..2024-09-01), collected only to timestamp the Biden->Harris candidate switch. It is NOT the complete market history, so it will NOT reconcile against subgraph orderbook.tradesQuantity; combine with --allow-partial. kalshi_ticker POPVOTE-24-D is listed for schema completeness only - Kalshi did not list POPVOTE-24 until 2024-10-07, so there is NO Kalshi data in this window. Resolved NO (Harris lost the popular vote to Trump 2024-11-05). Full-market volume $163.8M."
+}

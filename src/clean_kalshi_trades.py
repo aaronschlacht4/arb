@@ -10,10 +10,10 @@ stacked / compared directly for the arbitrage step. Venue-specific columns that
 don't apply to Kalshi (tx_hash/maker/taker) are written blank.
 
 FIELD SEMANTICS (identical meaning across venues):
-  outcome   YES/NO  — the contract that traded. YES = "the event happens"
-                      (here: a Democrat / Mamdani wins).
-  side      BUY/SELL — TAKER (aggressor) perspective. Kalshi tags the book side
-                      the taker hit: `ask` => taker bought, `bid` => taker sold.
+  outcome   YES/NO  — the outcome the TAKER is positioned for, i.e. the contract
+                      the taker ends up long. Straight from `taker_outcome_side`.
+  side      BUY      — ALWAYS "BUY" on Kalshi. See the note below; this is not a
+                      placeholder, it is the correct value.
   price     0-1     — price of the traded `outcome` contract (yes_price if the
                       trade was on YES, else no_price).
   quantity         — `count_fp`, number of contracts (each settles $0/$1).
@@ -21,6 +21,28 @@ FIELD SEMANTICS (identical meaning across venues):
   yes_price 0-1    — canonical implied P(event); for Kalshi this is always
                       yes_price_dollars. This is the column to compare across
                       venues (= implied probability the event happens).
+
+WHY `side` IS ALWAYS "BUY" (corrected 2026-07-12 — this was previously wrong):
+  Kalshi's public trade feed has NO buy/sell field, and cannot have one. Per the
+  API docs, `taker_outcome_side` is the outcome the taker is POSITIONED FOR:
+      "buy-yes and sell-no produce 'yes'; buy-no and sell-yes produce 'no'"
+  so buy-YES and sell-NO are folded into the SAME record. And `taker_book_side`
+  is merely a restatement of it:
+      "'bid' is equivalent to taker_outcome_side 'yes'; 'ask' is equivalent to
+       taker_outcome_side 'no'"
+  We confirmed this empirically: across POPVOTE-24-R/-D, PRES-2024-DJT and both
+  KXMAYORNYCPARTY-25 markets, ONLY the pairs (bid,yes) and (ask,no) ever occur —
+  never (ask,yes) or (bid,no). The two fields are perfectly collinear.
+
+  The old rule `side = "BUY" if taker_book_side == "ask" else "SELL"` therefore
+  did NOT recover trade direction. It silently re-encoded `outcome` (tagging every
+  YES trade "SELL" and every NO trade "BUY"), which is both uninformative and
+  backwards.
+
+  The honest normalization: every Kalshi taker ACQUIRES the `outcome` side, so
+  side is always BUY, and `outcome` carries the direction. This is also what makes
+  the venues comparable — a Polymarket "SELL YES" is a Kalshi "BUY NO".
+  (Downstream is unaffected: merge_for_arb.py derives its own side from `outcome`.)
 
 Run (event-driven — ticker + paths from events/<slug>/event.json):
     python src/clean_kalshi_trades.py mamdani-dem-nomination
@@ -52,9 +74,11 @@ def clean_row(t: dict) -> dict:
     no = float(t["no_price_dollars"])
     qty = float(t["count_fp"])
     qty = int(qty) if qty.is_integer() else qty
-    outcome = t["taker_outcome_side"].upper()            # YES / NO
+    outcome = t["taker_outcome_side"].upper()            # YES / NO the taker is long
     price = yes if outcome == "YES" else no              # price of the traded contract
-    side = "BUY" if t["taker_book_side"] == "ask" else "SELL"  # taker aggressor
+    # Kalshi has no buy/sell field: the taker always ACQUIRES `outcome`. See the
+    # module docstring — deriving side from taker_book_side is a known trap.
+    side = "BUY"
     return {
         "venue": "kalshi",
         "timestamp": dt.isoformat(),

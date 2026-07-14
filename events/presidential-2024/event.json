@@ -11,7 +11,10 @@
   "polymarket_event_slug": "presidential-election-winner-2024",
   "poly_start_block": 51909481,
   "poly_end_block": 64053541,
+  "poly_raw_gzip": true,
   "window_seconds": 300,
+  "start_ts": 1728100800,
+  "end_ts": 1730782800,
   "resolution": "YES",
-  "notes": "Trump market within the multi-candidate 2024 presidential event (neg-risk). Kalshi DJT = Donald J. Trump. Resolved YES 2024-11-05. Polymarket volume ~$1.53B."
+  "notes": "Trump market within the multi-candidate 2024 presidential event (neg-risk). Kalshi DJT = Donald J. Trump. Resolved YES 2024-11-05. Polymarket volume ~$1.53B. Window is whole ET days: start_ts = 2024-10-05 00:00 ET, the midnight after Kalshi's first print (2024-10-04 08:16 ET), so the partial listing day is excluded; end_ts = 2024-11-05 00:00 ET, midnight before Election Day, so the match stops before results start landing and the post-result repricing is excluded."
 }
