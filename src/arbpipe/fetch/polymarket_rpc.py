@@ -148,6 +148,7 @@ def main() -> None:
 
     total_blocks = end_block - start_block + 1
     t0 = time.time()
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     with out_path.open("a", encoding="utf-8") as f:
         for blk_lo, blk_hi, logs in get_logs_adaptive(url, start, end_block, args.span, exchange):
             for log in logs:

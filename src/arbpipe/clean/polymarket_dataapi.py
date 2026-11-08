@@ -1,8 +1,8 @@
 """
 Clean the Data-API-v2 raw Polymarket trades into a trade-level CSV.
 
-INPUT  (raw, never modified): raw/polymarket_dataapi_trades_<conditionId>.jsonl
-OUTPUT (derived, overwritable): clean/polymarket_dataapi_trades_<conditionId>.csv
+INPUT  (raw, never modified): events/<slug>/1_raw/polymarket/polymarket_dataapi_trades_<conditionId>.jsonl
+OUTPUT (derived, overwritable): events/<slug>/2_clean/polymarket/polymarket_dataapi_trades_<conditionId>.csv
 
 Emits the SHARED cross-venue schema (see notes/data_dictionary_polymarket.md) so
 this tape is column-for-column identical to the Kalshi tape and to the older
@@ -201,6 +201,7 @@ def main() -> None:
             f"No clean tape written.")
     del ids
 
+    ev.poly_dataapi_clean_csv.parent.mkdir(parents=True, exist_ok=True)
     with ev.poly_dataapi_clean_csv.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f, lineterminator="\n")
         w.writerow(FIELDS)

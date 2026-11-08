@@ -1,68 +1,68 @@
 [
   {
-    "slug": "presidential-2024",
-    "name": "Will Donald Trump win the 2024 US Presidential Election?",
-    "kalshi_ticker": "PRES-2024-DJT",
-    "polymarket_condition_id": "0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917",
+    "slug": "mamdani-dem-nomination",
+    "name": "Will Zohran Mamdani win the Dem nomination for NYC Mayor?",
+    "kalshi_ticker": "KXMAYORNYCNOMD-25-ZM",
+    "polymarket_condition_id": "0x6220c4164a293367cd40eba018dd6e67c78e4d48e74158845cc9361230bcb34d",
     "resolution": "YES",
     "window_seconds": 300,
     "files": {
       "kalshi_sorted_for_arb": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\kalshi_sorted_for_arb.csv",
-        "bytes": 23957273,
-        "rows": 287494
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/3_sorted/kalshi_sorted_for_arb.csv",
+        "bytes": 846905,
+        "rows": 10421
       },
       "poly_sorted_for_arb": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\poly_sorted_for_arb.csv",
-        "bytes": 499039288,
-        "rows": 2727423
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/3_sorted/poly_sorted_for_arb.csv",
+        "bytes": 2383917,
+        "rows": 13422
       },
       "kalshi_poly_merged_sorted_for_arb": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\kalshi_poly_merged_sorted_for_arb.csv",
-        "bytes": 487382300,
-        "rows": 3014917
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/3_sorted/kalshi_poly_merged_sorted_for_arb.csv",
+        "bytes": 2160480,
+        "rows": 23843
       },
       "merged_sorted_for_arb": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\merged_sorted_for_arb.csv",
-        "bytes": 487382300,
-        "rows": 3014917
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/3_sorted/merged_sorted_for_arb.csv",
+        "bytes": 2160480,
+        "rows": 23843
       },
       "matched_trades": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\matched_trades.csv",
-        "bytes": 88541534,
-        "rows": 573439
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/4_arbitrage/matched_trades.csv",
+        "bytes": 1249806,
+        "rows": 13801
       },
       "arbitrage_final": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\arbitrage_final.csv",
-        "bytes": 28328844,
-        "rows": 526419
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/4_arbitrage/arbitrage_final.csv",
+        "bytes": 2510529,
+        "rows": 11433
       },
       "results": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\results.txt",
-        "bytes": 333,
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/4_arbitrage/results.txt",
+        "bytes": 318,
         "rows": null
       },
       "charts_html": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\charts.html",
-        "bytes": 87530,
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/5_charts/charts.html",
+        "bytes": 84733,
         "rows": null
       },
       "prices_png": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\prices.png",
-        "bytes": 85297,
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/5_charts/prices.png",
+        "bytes": 70394,
         "rows": null
       },
       "positions_png": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\positions.png",
-        "bytes": 62511,
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/5_charts/positions.png",
+        "bytes": 60093,
         "rows": null
       },
       "locked_in_png": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\locked_in.png",
-        "bytes": 50868,
+        "path": "/Users/aaronschlacht/arb/arb-1/events/mamdani-dem-nomination/5_charts/locked_in.png",
+        "bytes": 46462,
         "rows": null
       }
     },
-    "net": 3049167.698997304
+    "net": 25507.941000000952
   }
 ]

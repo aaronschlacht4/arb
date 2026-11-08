@@ -1,5 +1,5 @@
 """
-Build an event's charts: results/charts.html (interactive, self-contained) plus
+Build an event's charts: 5_charts/charts.html (interactive, self-contained) plus
 prices.png / positions.png / locked_in.png (static exports of the same three).
 
 Nothing in the repo generated these before — the earlier events' charts were made
@@ -116,7 +116,8 @@ def price_series_from_arb(ev, venue: str):
     """Fallback price path, taken from arbitrage_final.csv itself.
 
     Used when an event's clean tapes aren't present (the mamdani events ship
-    their results/ in git but their raw/ and clean/ are gitignored). This is the
+    their 3_sorted/ and 4_arbitrage/ in git but their 1_raw/ and 2_clean/ are
+    gitignored). This is the
     MATCHED SUBSET of trades, not the whole market — fine for the price line's
     shape, but it is not the full tape. Re-fetch the raw data for an exact chart.
     """
@@ -207,7 +208,7 @@ def build(slug: str, allow_subset: bool = False) -> dict:
     # --- static PNGs ---
     import matplotlib.dates as mdates  # noqa: F401
     gd = np.array([np.datetime64(int(x), "s") for x in grid])
-    res = ev.results_dir
+    res = ev.charts_dir
     png(res / "prices.png",
         [("Polymarket", C_POLY, gd, p_grid), ("Kalshi", C_KALSHI, gd, k_grid)],
         f"{data['title']} — YES price by venue", "implied P(event)")
@@ -224,7 +225,7 @@ def build(slug: str, allow_subset: bool = False) -> dict:
     tpl = TEMPLATE.read_text(encoding="utf-8")
     html = (tpl.replace("__DATA__", json.dumps({slug: data}, separators=(",", ":")))
                .replace("__ORDER__", json.dumps([slug])))
-    (res / "charts.html").write_text(html, encoding="utf-8")
+    ev.charts_html.write_text(html, encoding="utf-8")
 
     print(f"  {slug}: {n_match:,} matches | locked-in ${pf.locked_in_value:,.0f} "
           f"| prices from {px_src}")

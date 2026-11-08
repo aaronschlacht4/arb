@@ -99,8 +99,9 @@ Before matching, each venue's trades are cleaned and sorted (`arbitrage.py`
 lines 26–201):
 
 1. **Floor Polymarket sizes to whole contracts.** `poly_size = floor(shares)`.
-   Fractional-share trades below 1.0 floor to 0 and are dropped entirely (no
-   liquidity, no row). Kalshi trades are already integer counts.
+   Fractional-share trades below 1.0 floor to 0. They stay in the sorted files
+   with size 0, as in Wendy's, and the matcher skips them (no liquidity). Kalshi
+   trades are already integer counts.
 
 2. **Normalize prices to a YES basis.** For a poly trade, if its outcome is YES
    the price *is* the YES price; if NO, `yes_price = 1 − price`. `poly_yes` is then
@@ -236,7 +237,7 @@ while most Poly trades never do. Two visible consequences:
 
 | File | Grain | One row = | Key columns |
 |---|---|---|---|
-| `arbitrage_final.csv` | one **match** | a poly-leg ⇄ kalshi-leg pairing | `poly_time, kalshi_time, poly_yes, poly_no, kalshi_yes, kalshi_no, arb_size, poly_side, kalshi_side` |
+| `arbitrage_final.csv` | one **match** | a poly-leg ⇄ kalshi-leg pairing | `poly_time, kalshi_time, poly_yes, poly_no, kalshi_yes, kalshi_no, arb_size, poly_side, kalshi_side`, then 15 running portfolio columns ending in `locked_in_value` (defined in `arbpipe.arbitrage.match.arb_rows`) |
 | `matched_trades.csv` | one **trade** | a distinct source trade that was consumed ≥ once | `timestamp, market, trade_id, side, size, yes_price, no_price` |
 
 In `matched_trades.csv`:
@@ -245,7 +246,9 @@ In `matched_trades.csv`:
 - `side` = the trade's **raw outcome** (poly upper-case, kalshi lower-case) — the
   side it actually traded, *not* the arb leg.
 - `size` = the trade's **full, floored original** quantity (not `arb_size`).
-- Rows are sorted by `(timestamp, market, original-input-index)`.
+- Rows are sorted by `(timestamp, market, _orig_idx)`, where `_orig_idx` is
+  Wendy's row number from the per-venue sorted files. For Polymarket that is
+  the position in the full tape sorted by `(timestamp, "<tx>-<maker>-<taker>")`.
 
 ---
 

@@ -1,8 +1,8 @@
 """
 Clean the RAW Polymarket OrderFilled logs into a trade-level CSV.
 
-INPUT  (raw, never modified): events/<slug>/raw/polymarket_rpc_orderfilled_<cond>.jsonl
-OUTPUT (derived, overwritable): events/<slug>/clean/polymarket_rpc_trades_<cond>.csv
+INPUT  (raw, never modified): events/<slug>/1_raw/polymarket/polymarket_rpc_orderfilled_<cond>.jsonl
+OUTPUT (derived, overwritable): events/<slug>/2_clean/polymarket/polymarket_rpc_trades_<cond>.csv
 
 Each raw line is one `OrderFilled` log (hex-encoded). The chain records only an
 asset swap; "price" and "shares" are reconstructed here.
@@ -118,6 +118,7 @@ def main() -> None:
 
     rows.sort(key=lambda r: (r["unix_ts"], r["tx_hash"], r["log_index"]))
 
+    clean_path.parent.mkdir(parents=True, exist_ok=True)
     with clean_path.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS)
         w.writeheader()

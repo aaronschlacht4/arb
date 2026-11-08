@@ -17,7 +17,7 @@ one `event.json` that every stage reads. The same code runs on any event.
 | `presidential-2024-v2` | `PRES-2024-DJT` | *(same market, re-collected)* | **$3,049,253** | data-api v2 |
 | `popvote-2024` | `POPVOTE-24-R` | Trump wins the popular vote | **$490,526** | subgraph |
 | `mamdani-nyc-mayor` | `KXMAYORNYCPARTY-25-D` | Mamdani wins NYC mayor | $390,993 | data-api v2 |
-| `mamdani-dem-nomination` | `KXMAYORNYCNOMD-25-ZM` | Mamdani wins the primary | $26,186 | data-api v2 |
+| `mamdani-dem-nomination` | `KXMAYORNYCNOMD-25-ZM` | Mamdani wins the primary | $25,508 | data-api v2 |
 | `popvote-2024-biden` | *(none in window)* | Biden wins the popular vote | — | subgraph |
 | `popvote-2024-kamala` | *(none in window)* | Harris wins the popular vote | — | subgraph |
 
@@ -44,6 +44,25 @@ the subgraph-sourced figures ($392,592 and $25,934). That gap is the taker-order
 vs maker-fill row granularity, not a change to the matcher — see
 `notes/polymarket_v2_migration.md`. The two 2024 events still carry their
 original subgraph tapes and numbers.
+
+`mamdani-dem-nomination` now starts at **2025-05-27 00:00 ET**
+(`start_ts` 1748318400), matching Wendy's run; it previously started
+2025-01-02 and netted $26,186.
+
+**Our scripts reproduce Wendy's byte for byte.** Fed her raw Kalshi JSON and
+on-chain OrderFilled CSV, our clean, merge and match stages write all five of
+her per-window files (merged, both sorted tapes, `arbitrage_final_*`,
+`matched_trades_*`) byte-identical to hers at 1, 5 and 10 minutes. That is a
+test (`tests/test_wendy_parity.py`) and a stage:
+
+```bash
+python arb.py parity mamdani-dem-nomination --her wendysResults/mamdani-dem-nomination --her-raw
+python arb.py parity mamdani-dem-nomination --her wendysResults/mamdani-dem-nomination   # where OUR data differs
+```
+
+So any difference in results is the data. Her Kalshi trades are identical to
+ours. The remaining gap is Polymarket row granularity: she uses on-chain maker
+fills, we use Data API taker orders.
 
 > **Both presidential tapes sit 2.43% above Gamma's `volumeNum`, and that is
 > GAMMA's error, not theirs.** This was an open question until the v2
@@ -114,18 +133,21 @@ permanently truncated one.
 
 ### Deliverables
 
-All under `events/<slug>/results/`:
+Every event folder has the same layout, numbered in the order the data flows
+(see `events/README.md`):
 
-| File | What it is |
-|---|---|
-| `kalshi_sorted_for_arb.csv` | Kalshi's tape, pre-arb |
-| `poly_sorted_for_arb.csv` | Polymarket's tape, pre-arb |
-| `kalshi_poly_merged_sorted_for_arb.csv` | both venues interleaved (matcher input) |
-| `merged_sorted_for_arb.csv` | same content, short name |
-| `matched_trades.csv` | every trade the matcher consumed |
-| `arbitrage_final.csv` | one row per matched arb pair |
-| `results.txt` | per-venue P&L and the Net |
-| `charts.html`, `prices.png`, `positions.png`, `locked_in.png` | the visualizations |
+| Folder | File | What it is |
+|---|---|---|
+| `1_raw/kalshi/`, `1_raw/polymarket/` | `*.jsonl` | as fetched, never modified (gitignored) |
+| `2_clean/kalshi/`, `2_clean/polymarket/` | `*.csv` | one trade per row, shared schema (gitignored) |
+| `3_sorted/` | `kalshi_sorted_for_arb.csv` | Kalshi's tape, pre-arb |
+| | `poly_sorted_for_arb.csv` | Polymarket's tape, pre-arb |
+| | `kalshi_poly_merged_sorted_for_arb.csv` | both venues interleaved (matcher input) |
+| | `merged_sorted_for_arb.csv` | same content, short name |
+| `4_arbitrage/` | `arbitrage_final.csv` | one row per matched arb pair, with Wendy's running portfolio columns |
+| | `matched_trades.csv` | every trade the matcher consumed |
+| | `results.txt` | per-venue P&L and the Net |
+| `5_charts/` | `charts.html`, `prices.png`, `positions.png`, `locked_in.png` | the visualizations |
 
 A machine-readable index of the last run lands at
 `events/last_run_manifest.json`.
@@ -135,17 +157,18 @@ A machine-readable index of the last run lands at
 | `arb.py` stage | module | does |
 |---|---|---|
 | `resolve` | `arbpipe.resolve` | market ids -> `events/<slug>/event.json` |
-| `fetch-kalshi` | `arbpipe.fetch.kalshi` | Kalshi historical trades -> `raw/*.jsonl` |
-| `fetch-poly` | `arbpipe.fetch.polymarket_dataapi` | Polymarket trades (v2 API) -> `raw/*.jsonl[.gz]` |
-| `clean-kalshi` | `arbpipe.clean.kalshi` | raw -> `clean/*.csv` (shared cross-venue schema) |
-| `clean-poly` | `arbpipe.clean.polymarket_dataapi` | raw -> `clean/*.csv` (same schema) |
+| `fetch-kalshi` | `arbpipe.fetch.kalshi` | Kalshi historical trades -> `1_raw/kalshi/` |
+| `fetch-poly` | `arbpipe.fetch.polymarket_dataapi` | Polymarket trades (v2 API) -> `1_raw/polymarket/` |
+| `clean-kalshi` | `arbpipe.clean.kalshi` | -> `2_clean/kalshi/` (shared cross-venue schema) |
+| `clean-poly` | `arbpipe.clean.polymarket_dataapi` | -> `2_clean/polymarket/` (same schema) |
 | `validate` | `arbpipe.verify.validate` | reconcile both tapes against independent sources |
-| `merge` | `arbpipe.arbitrage.merge` | clean tapes -> the 4 sorted-for-arb CSVs |
-| `match` | `arbpipe.arbitrage.match` | -> `results/arbitrage_final.csv` + `matched_trades.csv` |
-| `summary` | `arbpipe.arbitrage.summary` | -> `results/results.txt` |
-| `charts` | `arbpipe.report.charts` | -> `results/charts.html` + 3 PNGs |
+| `merge` | `arbpipe.arbitrage.merge` | -> `3_sorted/` (the 4 sorted-for-arb CSVs) |
+| `match` | `arbpipe.arbitrage.match` | -> `4_arbitrage/arbitrage_final.csv` + `matched_trades.csv` |
+| `summary` | `arbpipe.arbitrage.summary` | -> `4_arbitrage/results.txt` |
+| `charts` | `arbpipe.report.charts` | -> `5_charts/charts.html` + 3 PNGs |
 | `sync` | `arbpipe.report.sync` | cross-venue lead-lag / sync timing (diagnostic) |
 | `compare` | `arbpipe.verify.compare` | two events, same market pair, different sources |
+| `parity` | `arbpipe.verify.parity` | byte-compare with Wendy's run, or diff our data against hers |
 | `run` | `arbpipe.cli` | runs all of the above in order |
 
 Two more are not part of a run: `fetch-poly-rpc` / `clean-poly-rpc`
@@ -219,7 +242,7 @@ src/arbpipe/            the pipeline, as an importable package
   clean/                kalshi.py  polymarket_dataapi.py  polymarket_rpc.py
   arbitrage/            merge.py  match.py  summary.py
   report/               charts.py  sync.py  charts_template.html
-  verify/               validate.py  compare.py  reference_matcher.py
+  verify/               validate.py  compare.py  reference_matcher.py  parity.py
   legacy/               DEAD sources, kept as provenance (see its README)
 
 scripts/                shell helpers for the sharded RPC/subgraph runs
@@ -228,11 +251,15 @@ docs/                   arbitrage matching methodology
 notes/                  data dictionary, V2 migration, validation, sync timing
 
 events/<slug>/
-  event.json    market ids, exchange, window, resolution, notes   [versioned]
-  raw/          verbatim API/chain records, never modified         [gitignored]
-  clean/        trade-level CSVs, shared schema                    [gitignored]
-  results/      arb pairs, matched trades, results.txt, charts     [versioned]
-  reference/    the reference run's outputs, to compare against    [versioned]
+  event.json      market ids, exchange, window, resolution, notes  [versioned]
+  1_raw/kalshi/   1_raw/polymarket/     verbatim records           [gitignored]
+  2_clean/kalshi/ 2_clean/polymarket/   trade-level CSVs           [gitignored]
+  3_sorted/       per-venue + merged matcher input                 [versioned]
+  4_arbitrage/    arb pairs, matched trades, results.txt           [versioned]
+  5_charts/       charts.html + PNGs                               [versioned]
+  reference/      the reference run's outputs, to compare against  [versioned]
+
+wendysResults/mamdani-dem-nomination/   Wendy's run, same layout (see its README)
 ```
 
 Why the `src/` layout: it keeps importable code out of the project root, so
@@ -240,10 +267,10 @@ Why the `src/` layout: it keeps importable code out of the project root, so
 `src/` to `sys.path`, so no install step is needed; `pip install -e .` also
 works and then gives you an `arbpipe` console command.
 
-`raw/` and `clean/` are gitignored (too large) but **fully regenerable** from
-`event.json` via the fetch + clean stages. `results/merged_sorted_for_arb.csv`
-is likewise regenerable and not versioned, and neither is its byte-identical
-`kalshi_poly_merged_sorted_for_arb.csv` twin.
+`1_raw/` and `2_clean/` are gitignored (too large) but **fully regenerable** from
+`event.json` via the fetch + clean stages. The presidential `3_sorted/` files
+are likewise regenerable and not versioned, and no event versions the
+byte-identical `kalshi_poly_merged_sorted_for_arb.csv` twin.
 
 Large Polymarket tapes are stored **gzipped** (`"poly_raw_gzip": true` in
 `event.json`). The records are byte-identical — one verbatim JSON object per line —

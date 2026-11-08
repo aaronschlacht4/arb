@@ -112,7 +112,8 @@ to the API's default cannot silently double our tape.
 
 The v2 taker view is **coarser** than the subgraph's maker-fill view: one row
 per taker order instead of one row per matched maker order. Measured on
-`mamdani-dem-nomination`, same market and same window:
+`mamdani-dem-nomination`, same market and same window (the old 2025-01-02
+start; the event has since moved to Wendy's 2025-05-27 start, see README):
 
 | | old (subgraph) | new (data-api v2) |
 |---|---|---|

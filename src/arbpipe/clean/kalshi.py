@@ -1,8 +1,8 @@
 """
 Clean the RAW Kalshi historical trades into a trade-level CSV.
 
-INPUT  (raw, never modified): data/raw/kalshi_trades_<ticker>.jsonl
-OUTPUT (derived, overwritable): data/clean/kalshi_trades_<ticker>.csv
+INPUT  (raw, never modified): events/<slug>/1_raw/kalshi/kalshi_trades_<ticker>.jsonl
+OUTPUT (derived, overwritable): events/<slug>/2_clean/kalshi/kalshi_trades_<ticker>.csv
 
 Emits the SHARED cross-venue schema (see notes/data_dictionary_polymarket.md) so
 the Kalshi and Polymarket clean tapes are column-for-column identical and can be
@@ -111,6 +111,7 @@ def main() -> None:
     rows = [clean_row(json.loads(line)) for line in raw_path.open()]
     rows.sort(key=lambda r: (r["unix_ts"], r["trade_id"]))
 
+    clean_path.parent.mkdir(parents=True, exist_ok=True)
     with clean_path.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=FIELDS)
         w.writeheader()

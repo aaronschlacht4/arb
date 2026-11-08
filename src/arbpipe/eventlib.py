@@ -7,10 +7,12 @@ Usage:
     from arbpipe.eventlib import load_event
     ev = load_event("mamdani-nyc-mayor")   # or a path to an event.json
     ev.kalshi_ticker, ev.poly_condition_id, ev.window_seconds, ev.resolution
-    ev.raw_dir, ev.clean_dir, ev.results_dir
+    ev.raw_dir, ev.clean_dir, ev.sorted_dir, ev.arbitrage_dir, ev.charts_dir
     ev.kalshi_raw_jsonl, ev.kalshi_clean_csv
     ev.poly_rpc_raw_jsonl, ev.poly_rpc_clean_csv
-    ev.merged_csv, ev.arb_final_csv, ev.matched_trades_csv
+    ev.merged_csv, ev.arb_final_csv, ev.matched_trades_csv, ev.results_txt
+
+Folder layout per event: see the comment above Event.raw_dir.
 
 CLI convention: pass the event slug as the first argument to any stage script,
 e.g.  `python arb.py merge mamdani-nyc-mayor`. Defaults to the single
@@ -50,6 +52,7 @@ def write_checkpoint(path: Path, data: dict) -> None:
     interruption into a manual repair. os.replace is atomic on both POSIX and
     Windows, so a reader sees either the old checkpoint or the new one.
     """
+    path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_name(path.name + ".tmp")
     tmp.write_text(json.dumps(data), encoding="utf-8")
     os.replace(tmp, path)
@@ -213,6 +216,8 @@ def open_raw(path: Path, mode: str = "rt", use_gzip: bool = False):
     stream concatenated members — so the resumable/sharded fetch is unaffected.
     """
     p = raw_path(path, use_gzip)
+    if any(c in mode for c in "wax"):
+        p.parent.mkdir(parents=True, exist_ok=True)
     if p.suffix == ".gz":
         return gzip.open(p, mode, encoding="utf-8")
     return p.open(mode, encoding="utf-8")
@@ -240,17 +245,59 @@ class Event:
         self.end_ts = cfg.get("end_ts")
 
     # --- directories ---
+    # One folder per pipeline stage, numbered in the order the data flows, with
+    # the two venues side by side inside the stages that are per venue:
+    #
+    #   events/<slug>/
+    #     event.json
+    #     1_raw/kalshi/  1_raw/polymarket/      as fetched, never modified
+    #     2_clean/kalshi/  2_clean/polymarket/  one trade per row, shared schema
+    #     3_sorted/                             per-venue + merged matcher input
+    #     4_arbitrage/                          arb pairs, matched trades, results.txt
+    #     5_charts/                             charts.html + PNGs
+    #     reference/                            the original study's files, if any
+    #
+    # 1_raw and 2_clean are gitignored (large, regenerable); 3-5 are versioned.
+    #
+    # 1_raw/ and 2_clean/ are NOT created on access: stages probe for tapes
+    # that may not exist (poly_clean_csv() checks three sources), and creating
+    # folders on every probe leaves empty ones behind. The fetchers and
+    # cleaners create the parent folder when they write.
     @property
     def raw_dir(self):
-        return _ensure(self.dir / "raw")
+        return self.dir / "1_raw"
 
     @property
     def clean_dir(self):
-        return _ensure(self.dir / "clean")
+        return self.dir / "2_clean"
 
     @property
-    def results_dir(self):
-        return _ensure(self.dir / "results")
+    def kalshi_raw_dir(self):
+        return self.raw_dir / "kalshi"
+
+    @property
+    def poly_raw_dir(self):
+        return self.raw_dir / "polymarket"
+
+    @property
+    def kalshi_clean_dir(self):
+        return self.clean_dir / "kalshi"
+
+    @property
+    def poly_clean_dir(self):
+        return self.clean_dir / "polymarket"
+
+    @property
+    def sorted_dir(self):
+        return _ensure(self.dir / "3_sorted")
+
+    @property
+    def arbitrage_dir(self):
+        return _ensure(self.dir / "4_arbitrage")
+
+    @property
+    def charts_dir(self):
+        return _ensure(self.dir / "5_charts")
 
     @property
     def reference_dir(self):
@@ -259,43 +306,43 @@ class Event:
     # --- raw files ---
     @property
     def kalshi_raw_jsonl(self):
-        return self.raw_dir / f"kalshi_trades_{self.kalshi_ticker}.jsonl"
+        return self.kalshi_raw_dir / f"kalshi_trades_{self.kalshi_ticker}.jsonl"
 
     @property
     def poly_rpc_raw_jsonl(self):
-        return self.raw_dir / \
+        return self.poly_raw_dir / \
             f"polymarket_rpc_orderfilled_{self.poly_condition_id}.jsonl"
 
     @property
     def poly_subgraph_raw_jsonl(self):
-        return self.raw_dir / \
+        return self.poly_raw_dir / \
             f"polymarket_subgraph_orderfilled_{self.poly_condition_id}.jsonl"
 
     @property
     def poly_dataapi_raw_jsonl(self):
         # Data API v2 — the live source. The subgraph that fed
         # poly_subgraph_raw_jsonl was deprecated in Polymarket's V2 migration.
-        return self.raw_dir / \
+        return self.poly_raw_dir / \
             f"polymarket_dataapi_trades_{self.poly_condition_id}.jsonl"
 
     # --- clean tapes ---
     @property
     def kalshi_clean_csv(self):
-        return self.clean_dir / f"kalshi_trades_{self.kalshi_ticker}.csv"
+        return self.kalshi_clean_dir / f"kalshi_trades_{self.kalshi_ticker}.csv"
 
     @property
     def poly_rpc_clean_csv(self):
-        return self.clean_dir / \
+        return self.poly_clean_dir / \
             f"polymarket_rpc_trades_{self.poly_condition_id}.csv"
 
     @property
     def poly_subgraph_clean_csv(self):
-        return self.clean_dir / \
+        return self.poly_clean_dir / \
             f"polymarket_subgraph_trades_{self.poly_condition_id}.csv"
 
     @property
     def poly_dataapi_clean_csv(self):
-        return self.clean_dir / \
+        return self.poly_clean_dir / \
             f"polymarket_dataapi_trades_{self.poly_condition_id}.csv"
 
     def poly_clean_csv(self):
@@ -320,35 +367,44 @@ class Event:
                 return p
         return None
 
-    # --- pipeline outputs ---
-    @property
-    def merged_csv(self):
-        return self.results_dir / "merged_sorted_for_arb.csv"
-
-    @property
-    def arb_final_csv(self):
-        return self.results_dir / "arbitrage_final.csv"
-
-    @property
-    def matched_trades_csv(self):
-        return self.results_dir / "matched_trades.csv"
-
-    # Per-venue sorted tapes — the arb matcher's actual inputs, one file per
-    # venue, in the reference run's schema (see merge_for_arb.py). The merged
-    # file interleaves these two; these show each venue's tape on its own.
+    # --- 3_sorted: the matcher's input ---
+    # Per-venue sorted tapes in Wendy's schema (see arbitrage/merge.py), plus
+    # the merged file that interleaves them.
     @property
     def kalshi_sorted_csv(self):
-        return self.results_dir / "kalshi_sorted_for_arb.csv"
+        return self.sorted_dir / "kalshi_sorted_for_arb.csv"
 
     @property
     def poly_sorted_csv(self):
-        return self.results_dir / "poly_sorted_for_arb.csv"
+        return self.sorted_dir / "poly_sorted_for_arb.csv"
 
-    # Alias: the reference run calls the merged file
-    # `kalshi_poly_merged_sorted_for_arb.csv`. Same content as merged_csv.
+    @property
+    def merged_csv(self):
+        return self.sorted_dir / "merged_sorted_for_arb.csv"
+
+    # Alias: Wendy calls the merged file `kalshi_poly_merged_sorted_for_arb.csv`.
+    # Same content as merged_csv.
     @property
     def merged_sorted_alias_csv(self):
-        return self.results_dir / "kalshi_poly_merged_sorted_for_arb.csv"
+        return self.sorted_dir / "kalshi_poly_merged_sorted_for_arb.csv"
+
+    # --- 4_arbitrage: what the matcher produced ---
+    @property
+    def arb_final_csv(self):
+        return self.arbitrage_dir / "arbitrage_final.csv"
+
+    @property
+    def matched_trades_csv(self):
+        return self.arbitrage_dir / "matched_trades.csv"
+
+    @property
+    def results_txt(self):
+        return self.arbitrage_dir / "results.txt"
+
+    # --- 5_charts ---
+    @property
+    def charts_html(self):
+        return self.charts_dir / "charts.html"
 
 
 def _ensure(p: Path) -> Path:

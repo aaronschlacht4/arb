@@ -38,16 +38,16 @@ STAGES = {
     "run":             ("arbpipe.cli", "whole pipeline for an event (or --all)"),
     "resolve":         ("arbpipe.resolve", "market ids -> events/<slug>/event.json"),
 
-    "fetch-kalshi":    ("arbpipe.fetch.kalshi", "Kalshi trades -> raw/"),
+    "fetch-kalshi":    ("arbpipe.fetch.kalshi", "Kalshi trades -> 1_raw/kalshi/"),
     "fetch-poly":      ("arbpipe.fetch.polymarket_dataapi",
-                        "Polymarket Data API v2 trades -> raw/"),
+                        "Polymarket Data API v2 trades -> 1_raw/polymarket/"),
     "fetch-poly-rpc":  ("arbpipe.fetch.polymarket_rpc",
                         "Polymarket via on-chain RPC (fallback source)"),
 
-    "clean-kalshi":    ("arbpipe.clean.kalshi", "raw -> clean/ (shared schema)"),
+    "clean-kalshi":    ("arbpipe.clean.kalshi", "1_raw -> 2_clean/kalshi/"),
     "clean-poly":      ("arbpipe.clean.polymarket_dataapi",
-                        "raw -> clean/ (shared schema)"),
-    "clean-poly-rpc":  ("arbpipe.clean.polymarket_rpc", "raw RPC -> clean/"),
+                        "1_raw -> 2_clean/polymarket/"),
+    "clean-poly-rpc":  ("arbpipe.clean.polymarket_rpc", "raw RPC -> 2_clean/polymarket/"),
 
     "validate":        ("arbpipe.verify.validate",
                         "check both tapes against independent ground truth"),
@@ -55,14 +55,16 @@ STAGES = {
                         "diff two collections of the SAME market pair"),
     "reference-match": ("arbpipe.verify.reference_matcher",
                         "reproduce the reference matcher, for provenance"),
+    "parity":          ("arbpipe.verify.parity",
+                        "byte-compare with Wendy's run (--her-raw), or diff data"),
 
     "merge":           ("arbpipe.arbitrage.merge",
-                        "clean tapes -> the 4 sorted-for-arb CSVs"),
+                        "2_clean -> 3_sorted/ (4 sorted-for-arb CSVs)"),
     "match":           ("arbpipe.arbitrage.match",
-                        "merged tape -> arbitrage_final + matched_trades"),
-    "summary":         ("arbpipe.arbitrage.summary", "per-venue P&L -> results.txt"),
+                        "3_sorted -> 4_arbitrage/ (arb pairs, matched trades)"),
+    "summary":         ("arbpipe.arbitrage.summary", "per-venue P&L -> 4_arbitrage/results.txt"),
 
-    "charts":          ("arbpipe.report.charts", "charts.html + 3 PNGs"),
+    "charts":          ("arbpipe.report.charts", "5_charts/ (charts.html + 3 PNGs)"),
     "sync":            ("arbpipe.report.sync",
                         "venue synchronisation timing (needs pandas)"),
 }

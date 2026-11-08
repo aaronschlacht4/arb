@@ -9,8 +9,8 @@
 # Run it from anywhere: it cds to the project root itself.
 #
 # When all shards finish, combine and clean:
-#   cat events/presidential-2024/raw/polymarket_rpc_orderfilled_*.part*.jsonl \
-#     > events/presidential-2024/raw/polymarket_rpc_orderfilled_0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917.jsonl
+#   cat events/presidential-2024/1_raw/polymarket/polymarket_rpc_orderfilled_*.part*.jsonl \
+#     > events/presidential-2024/1_raw/polymarket/polymarket_rpc_orderfilled_0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917.jsonl
 #   python arb.py clean-poly-rpc presidential-2024
 # (row order across parts doesn't matter — the cleaner sorts.)
 

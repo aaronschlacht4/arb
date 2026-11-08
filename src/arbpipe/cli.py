@@ -10,26 +10,26 @@ arbitrage dataset and the charts.
 
 STAGES (each is the existing single-purpose script, run in order):
     resolve_market            markets          -> events/<slug>/event.json
-    fetch_kalshi_trades       Kalshi API       -> raw/kalshi_trades_*.jsonl
-    clean_kalshi_trades       raw              -> clean/kalshi_trades_*.csv
-    fetch_polymarket_dataapi  Polymarket v2    -> raw/polymarket_dataapi_*.jsonl
-    clean_polymarket_dataapi  raw              -> clean/polymarket_dataapi_*.csv
+    fetch_kalshi_trades       Kalshi API       -> 1_raw/kalshi/
+    clean_kalshi_trades       raw              -> 2_clean/kalshi/
+    fetch_polymarket_dataapi  Polymarket v2    -> 1_raw/polymarket/
+    clean_polymarket_dataapi  raw              -> 2_clean/polymarket/
     validate_event            both tapes vs independent ground truth
     merge_for_arb             clean tapes      -> the 4 sorted-for-arb CSVs
     run_arbitrage             merged           -> arbitrage_final + matched_trades
     results_summary           arb pairs        -> results.txt
     make_charts               replay           -> charts.html + 3 PNGs
 
-DELIVERABLES, all under events/<slug>/results/ — these are the files the
-pipeline exists to produce:
-    kalshi_sorted_for_arb.csv              Kalshi tape, pre-arb
-    poly_sorted_for_arb.csv                Polymarket tape, pre-arb
-    kalshi_poly_merged_sorted_for_arb.csv  both venues interleaved
-    merged_sorted_for_arb.csv              (same content, short name)
-    matched_trades.csv                     every trade the matcher consumed
-    arbitrage_final.csv                    one row per matched arb pair
-    results.txt                            per-venue P&L and the Net
-    charts.html + prices/positions/locked_in.png
+DELIVERABLES, under events/<slug>/ — these are the files the pipeline exists
+to produce:
+    3_sorted/kalshi_sorted_for_arb.csv              Kalshi tape, pre-arb
+    3_sorted/poly_sorted_for_arb.csv                Polymarket tape, pre-arb
+    3_sorted/kalshi_poly_merged_sorted_for_arb.csv  both venues interleaved
+    3_sorted/merged_sorted_for_arb.csv              (same content, short name)
+    4_arbitrage/matched_trades.csv                  every trade the matcher consumed
+    4_arbitrage/arbitrage_final.csv                 one row per matched arb pair
+    4_arbitrage/results.txt                         per-venue P&L and the Net
+    5_charts/charts.html + prices/positions/locked_in.png
 
 IDEMPOTENCE. A stage whose output already exists is SKIPPED, so a re-run costs
 nothing and an interrupted run resumes. Two deliberate exceptions:
@@ -217,19 +217,19 @@ def manifest(ev, charts: bool) -> dict:
         ("merged_sorted_for_arb", ev.merged_csv),
         ("matched_trades", ev.matched_trades_csv),
         ("arbitrage_final", ev.arb_final_csv),
-        ("results", ev.results_dir / "results.txt"),
+        ("results", ev.results_txt),
     ]
     if charts:
-        wanted += [("charts_html", ev.results_dir / "charts.html"),
-                   ("prices_png", ev.results_dir / "prices.png"),
-                   ("positions_png", ev.results_dir / "positions.png"),
-                   ("locked_in_png", ev.results_dir / "locked_in.png")]
+        wanted += [("charts_html", ev.charts_html),
+                   ("prices_png", ev.charts_dir / "prices.png"),
+                   ("positions_png", ev.charts_dir / "positions.png"),
+                   ("locked_in_png", ev.charts_dir / "locked_in.png")]
     for key, p in wanted:
         if p.exists():
             out["files"][key] = {"path": str(p),
                                  "bytes": p.stat().st_size,
                                  "rows": count_rows(p)}
-    rt = ev.results_dir / "results.txt"
+    rt = ev.results_txt
     if rt.exists():
         for line in rt.read_text().splitlines():
             if line.startswith("Net:"):
@@ -259,7 +259,8 @@ def print_manifest(m: dict) -> None:
     for k, v in m["files"].items():
         rows = f"{v['rows']:>10,} rows" if v["rows"] is not None else " " * 15
         print(f"  {k:<36}{rows}  {v['bytes'] / 1e6:>7.2f} MB")
-    print(f"\n  all under: {Path(next(iter(m['files'].values()))['path']).parent}")
+    # Files sit in 3_sorted/, 4_arbitrage/ and 5_charts/; name the event folder.
+    print(f"\n  all under: {Path(next(iter(m['files'].values()))['path']).parent.parent}")
 
 
 def main() -> None:

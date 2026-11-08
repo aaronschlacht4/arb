@@ -79,7 +79,7 @@ def count_rows(path) -> int | None:
 
 
 def read_net(ev) -> float | None:
-    p = ev.results_dir / "results.txt"
+    p = ev.results_txt
     if not p.exists():
         return None
     for line in p.read_text().splitlines():

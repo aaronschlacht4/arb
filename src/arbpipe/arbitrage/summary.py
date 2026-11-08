@@ -16,7 +16,7 @@ Per venue the report shows:
   earnings — payback - expense (equals y + z*settle)
   net      — y + z*settle from the model
 Then the overall Net. The hedge check (|z_poly| vs |z_kalshi|) runs as a
-stdout diagnostic. Writes events/<slug>/results/results.txt.
+stdout diagnostic. Writes events/<slug>/4_arbitrage/results.txt.
 
 Run:
     python arb.py summary mamdani-nyc-mayor
@@ -72,7 +72,7 @@ def main() -> None:
         ]
     lines.append(f"Net: {pf.net_value(settle_yes, settle_yes)}")
 
-    out = ev.results_dir / "results.txt"
+    out = ev.results_txt
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))
     print(f"\n-> {out}")
