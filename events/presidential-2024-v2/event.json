@@ -1,0 +1,20 @@
+{
+  "slug": "presidential-2024-v2",
+  "name": "Will Donald Trump win the 2024 US Presidential Election?",
+  "kalshi_ticker": "PRES-2024-DJT",
+  "polymarket_condition_id": "0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917",
+  "polymarket_exchange": "0xc5d563a36ae78145c45a50134d48a1215220f80a",
+  "polymarket_token_ids": [
+    "21742633143463906290569050155826241533067272736897614950488156847949938836455",
+    "48331043336612883890938759509493159234755048973500640148014422747788308965732"
+  ],
+  "polymarket_market_slug": "will-donald-trump-win-the-2024-us-presidential-election",
+  "window_seconds": 300,
+  "resolution": "YES",
+  "start_ts": 1728100800,
+  "end_ts": 1730782800,
+  "poly_raw_gzip": true,
+  "kalshi_title": "Will Donald Trump or another Republican win the Presidency?",
+  "kalshi_yes_sub_title": "Donald Trump",
+  "notes": "Data API v2 re-collection of presidential-2024, which was collected from the now-dead Goldsky subgraph. Same market, same window (whole ET days: start 2024-10-05 00:00 ET, end 2024-11-05 00:00 ET) so the Net is directly comparable to the subgraph-sourced $3,049,168. See notes/polymarket_v2_migration.md."
+}

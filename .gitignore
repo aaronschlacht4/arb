@@ -25,5 +25,15 @@ delivery*/
 .DS_Store
 .ipynb_checkpoints/
 
-# Presidential merged tape exceeds GitHub 100MB cap; regenerate via merge_for_arb.py
-events/presidential-2024/results/merged_sorted_for_arb.csv
+# The *_merged_* alias is BYTE-IDENTICAL to merged_sorted_for_arb.csv (verified
+# on all four events that have one, 2026-11-08) and merge_for_arb.py regenerates
+# it in seconds. Versioning it would write a second copy of the same ~82MB into
+# history, which git never gives back. The file is still PRODUCED on disk — it is
+# one of the named deliverables — it is just not versioned twice.
+events/*/results/kalshi_poly_merged_sorted_for_arb.csv
+
+# Presidential sorted tapes ALSO exceed GitHub's 100MB per-file cap; all are
+# regenerable via merge_for_arb.py.
+events/presidential-*/results/merged_sorted_for_arb.csv
+events/presidential-*/results/poly_sorted_for_arb.csv
+events/presidential-*/results/kalshi_sorted_for_arb.csv

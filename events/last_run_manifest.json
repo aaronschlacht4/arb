@@ -1,0 +1,68 @@
+[
+  {
+    "slug": "popvote-2024-v2",
+    "name": "Who wins the 2024 US popular vote? (Kalshi: Republican | Polymarket: Trump)",
+    "kalshi_ticker": "POPVOTE-24-R",
+    "polymarket_condition_id": "0xcd1b6b71a1964f15e2c14809594cbfa0d576270e8ef94c8c24913121097e09e5",
+    "resolution": "YES",
+    "window_seconds": 300,
+    "files": {
+      "kalshi_sorted_for_arb": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\kalshi_sorted_for_arb.csv",
+        "bytes": 3081873,
+        "rows": 37480
+      },
+      "poly_sorted_for_arb": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\poly_sorted_for_arb.csv",
+        "bytes": 17893763,
+        "rows": 158267
+      },
+      "kalshi_poly_merged_sorted_for_arb": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\kalshi_poly_merged_sorted_for_arb.csv",
+        "bytes": 19068872,
+        "rows": 195747
+      },
+      "merged_sorted_for_arb": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\merged_sorted_for_arb.csv",
+        "bytes": 19068872,
+        "rows": 195747
+      },
+      "matched_trades": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\matched_trades.csv",
+        "bytes": 6745759,
+        "rows": 72245
+      },
+      "arbitrage_final": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\arbitrage_final.csv",
+        "bytes": 3502086,
+        "rows": 65266
+      },
+      "results": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\results.txt",
+        "bytes": 334,
+        "rows": null
+      },
+      "charts_html": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\charts.html",
+        "bytes": 86643,
+        "rows": null
+      },
+      "prices_png": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\prices.png",
+        "bytes": 78799,
+        "rows": null
+      },
+      "positions_png": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\positions.png",
+        "bytes": 58704,
+        "rows": null
+      },
+      "locked_in_png": {
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\locked_in.png",
+        "bytes": 49696,
+        "rows": null
+      }
+    },
+    "net": 490149.96799997427
+  }
+]

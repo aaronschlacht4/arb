@@ -3,10 +3,30 @@
 Market: "Will Zohran Mamdani win the 2025 NYC mayoral election?"
 conditionId: `0xebddfcf7b4401dade8b4031770a1ab942b01854f3bed453d5df9425cd9f211a9`
 
-- **Raw**: `data/raw/polymarket_rpc_orderfilled_<conditionId>.jsonl` — one `OrderFilled`
-  log per line, verbatim from the chain (via Alchemy `eth_getLogs`). Never modified.
-- **Clean**: `data/clean/polymarket_rpc_trades_<conditionId>.csv` — produced by
-  `src/clean_polymarket_rpc.py`. One row per **maker-order fill**.
+## Sources — which one you are reading
+
+Three Polymarket sources exist in this repo. **Only `dataapi` still works for a
+new fetch**; the other two are kept so pre-migration tapes reproduce. See
+`notes/polymarket_v2_migration.md`.
+
+| Source | Raw file | Cleaner | Row granularity | Status |
+|---|---|---|---|---|
+| `dataapi` | `polymarket_dataapi_trades_<cid>.jsonl` | `clean_polymarket_dataapi.py` | one row per **taker order** | **live** |
+| `rpc` | `polymarket_rpc_orderfilled_<cid>.jsonl` | `clean_polymarket_rpc.py` | one row per **maker-order fill** | needs `ALCHEMY_POLYGON_URL` |
+| `subgraph` | `polymarket_subgraph_orderfilled_<cid>.jsonl` | `clean_polymarket_subgraph.py` | one row per **maker-order fill** | **dead** (V2 migration) |
+
+`eventlib.Event.poly_clean_csv()` picks whichever exists, preferring
+`rpc` → `dataapi` → `subgraph`.
+
+**Granularity matters.** The maker-fill sources emit roughly 2x the rows of the
+taker view for the same trades and the same total volume (measured: 40,823 vs
+21,429 rows, share totals within 0.06%). Row counts are therefore not
+comparable across sources; share and dollar volumes are.
+
+- **Raw (rpc)**: one `OrderFilled` log per line, verbatim from the chain (via
+  Alchemy `eth_getLogs`). Never modified.
+- **Clean (rpc)**: produced by `src/clean_polymarket_rpc.py`. One row per
+  **maker-order fill**.
 
 ## Row selection (the key transformation)
 

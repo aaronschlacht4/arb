@@ -32,7 +32,17 @@ from collections import Counter
 
 from eventlib import load_event, open_raw, raw_path
 from fetch_polymarket_subgraph import load_endpoint
-from validate_event import gql_orderbook
+
+# The subgraph's `orderbook` entity was this script's completeness oracle, via
+# a `gql_orderbook` helper that lived in validate_event.py. Polymarket's V2
+# migration retired that endpoint, so the helper was removed and the check
+# below cannot run. The query is kept here, unused, so the shape of the old
+# oracle is still on record for anyone reading an archived tape.
+ORDERBOOK_QUERY = """
+query($id: ID!) {
+  orderbook(id: $id) { id tradesQuantity scaledCollateralVolume }
+}
+"""
 
 
 def _key(rec_id: str) -> int:
@@ -105,27 +115,24 @@ def main() -> None:
     print(f"  foreign market  : {n_foreign:,}  (expected 0)")
     print(f"records written   : {len(seen):,}  -> {out_actual}")
 
-    # Independent completeness check against the indexer's own counters.
-    print("\ncompleteness vs subgraph orderbook.tradesQuantity:")
-    url = load_endpoint()
-    all_ok = True
-    for tok, name in token_name.items():
-        expected = int(gql_orderbook(url, tok)["tradesQuantity"])
-        got = per_token[tok]
-        ok = got == expected
-        all_ok &= ok
-        flag = "ok" if ok else f"MISSING {expected - got:,}"
-        print(f"  {name}: {got:,} / {expected:,}   [{flag}]")
-
-    if not all_ok:
-        if args.allow_partial:
-            print("\nPARTIAL by design (--allow-partial): this tape is a time "
-                  "slice, not the full market. Do NOT use it for volume totals.")
-            return
-        raise SystemExit("\nINCOMPLETE — a shard came up short. Re-run the "
-                         "shard covering the gap (its checkpoint will resume), "
-                         "then re-combine with --force.")
-    print("\nAll tokens complete.")
+    # The completeness check that used to live here compared each token's fill
+    # count against the subgraph's own `orderbook.tradesQuantity`. That
+    # endpoint is gone (V2 migration), so there is no per-token oracle left for
+    # this source. Say so rather than appear to have checked.
+    print("\ncompleteness: NOT CHECKED — the subgraph's orderbook counters "
+          "were retired with the endpoint.")
+    print("  Validate the CLEANED tape instead:  python src/validate_event.py "
+          f"{ev.slug}")
+    print("  (it reconciles share volume against Gamma's independent counter)")
+    if args.allow_partial:
+        print("\nPARTIAL by design (--allow-partial): this tape is a time "
+              "slice, not the full market. Do NOT use it for volume totals.")
+    # NO completeness verdict is printed here, deliberately. This script used to
+    # end with "All tokens complete." on the strength of the subgraph's own
+    # per-token counters. Those counters are gone, so any verdict now would be
+    # an unbacked claim about a tape nothing has checked — worse than silence,
+    # because it reads as reassurance. validate_event.py is the only place that
+    # can still answer the question.
 
 
 if __name__ == "__main__":

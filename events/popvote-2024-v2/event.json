@@ -1,0 +1,18 @@
+{
+  "slug": "popvote-2024-v2",
+  "name": "Who wins the 2024 US popular vote? (Kalshi: Republican | Polymarket: Trump)",
+  "kalshi_ticker": "POPVOTE-24-R",
+  "polymarket_condition_id": "0xcd1b6b71a1964f15e2c14809594cbfa0d576270e8ef94c8c24913121097e09e5",
+  "polymarket_exchange": "0xc5d563a36ae78145c45a50134d48a1215220f80a",
+  "polymarket_token_ids": [
+    "42699080635179861375280720242213672850141860123562672932351602811041149946128",
+    "52646153159016006621189163812433115969858888637703551736022048114666679879653"
+  ],
+  "polymarket_event_slug": "presidential-election-popular-vote-winner-2024",
+  "polymarket_market_slug": "will-donald-trump-win-the-popular-vote-in-the-2024-presidential-election",
+  "polymarket_neg_risk_market_id": "0xfa5d43be36255764600be8bf2a29f288e6c8963c121df8400ddfe6bcbc744700",
+  "window_seconds": 300,
+  "resolution": "YES",
+  "poly_raw_gzip": true,
+  "notes": "Data API v2 re-collection of popvote-2024, which was collected from the now-dead Goldsky subgraph. Same market pair, same window_seconds, and DELIBERATELY NO start_ts/end_ts - the baseline had no cutoffs, so the Net here is directly comparable to the subgraph-sourced $490,525.99. See notes/polymarket_v2_migration.md. ROW GRANULARITY DIFFERS BY DESIGN: the subgraph gave one row per matched MAKER order (197,428 clean trades) while Data API v2 gives one row per TAKER order, so expect materially fewer rows for the same share volume - that is the invariant to check, not the row count. ASYMMETRIC MAPPING - READ BEFORE USING FOR ARBITRAGE. Kalshi POPVOTE-24-R is PARTY-level ('a Republican wins the popular vote'); the POPVOTE-24 series has only -R and -D, no candidate tickers. Polymarket's 'Popular Vote Winner 2024' event (id 903216, negRisk, 17 markets) is CANDIDATE-level and has NO party market. Per user decision (2026-07-12) we map Kalshi -R to the Polymarket TRUMP market. P(Republican wins) = Trump + Haley + DeSantis + Ramaswamy + Christie + 'any other Republican', but the nomination risk is moot HERE because Kalshi POPVOTE-24-R only began trading 2024-10-07, long after Trump clinched; no other Republican could plausibly have won the popular vote, so the two contracts pay out identically in every realistic state of the world and the hedge is sound. Both sides resolved YES (Trump won the popular vote, 2024-11-05). Treat the Net as an UPPER BOUND: the matcher assumes every trade was a two-sided quote, and see notes/sync_timing.md - dislocations half-life in ~97s when active while the window is 300s. COLLECTED 2026-11-05 (data-api v2): Kalshi 37,480 trades / 36,740,947 contracts (2024-10-07..2025-01-06) - byte-for-byte the same count as the baseline, since Kalshi did not change; Polymarket 168,432 clean taker trades / 119,933,283 shares / $53.87M USDC (2024-01-10..2024-11-11) vs the baseline's 197,428 maker-fill rows / 119,932,841 shares - share volume agrees to 0.0004%, which is the invariant that matters. Gamma volumeNum 119,932,621 shares, ratio 1.0000. VALIDATION PASSED on every check. ARBITRAGE RESULT (window_seconds=300): 65,266 matches, 72,245 matched trades (poly 40,172 / kalshi 32,073), Net $490,149.97 vs the subgraph-sourced baseline $490,525.99 - a delta of -0.08%, consistent with the row-granularity change and NOT a regression. MEASURED SPREAD re-confirmed: Polymarket's Trump price is above Kalshi's Republican price on 36/36 overlapping days (median gap -0.0305, range -0.0692..-0.0083), matching the baseline's median -0.030 - i.e. the autumn-2024 Polymarket Trump premium reproduces exactly from an independent source."
+}

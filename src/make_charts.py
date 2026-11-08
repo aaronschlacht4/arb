@@ -162,9 +162,8 @@ def build(slug: str, allow_subset: bool = False) -> dict:
     # Prices come from the CLEAN TAPES where we have them — we want the whole
     # market, not just the trades that happened to arb. Fall back to the matched
     # subset in arbitrage_final.csv for events whose tapes aren't in this clone.
-    poly_clean = (ev.poly_rpc_clean_csv if ev.poly_rpc_clean_csv.exists()
-                  else ev.poly_subgraph_clean_csv)
-    if ev.kalshi_clean_csv.exists() and poly_clean.exists():
+    poly_clean = ev.poly_clean_csv()   # rpc > dataapi > subgraph
+    if ev.kalshi_clean_csv.exists() and poly_clean is not None:
         kt, kp = price_series(ev.kalshi_clean_csv)
         pt, pp = price_series(poly_clean)
         px_src = "clean tapes"

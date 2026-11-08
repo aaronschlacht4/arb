@@ -150,8 +150,19 @@ def main() -> None:
 
     ev = load_event(args.event)
     cols = ["unix_ts", "yes_price", "quantity"]
+    # Whichever Polymarket tape this event has (rpc > dataapi > subgraph).
+    # Hardcoding the subgraph path here used to break every event collected
+    # after Polymarket's V2 migration.
+    poly_path = ev.poly_clean_csv()
+    if poly_path is None:
+        raise SystemExit(
+            f"No Polymarket clean tape for {ev.slug}. Run:\n"
+            f"  python src/fetch_polymarket_dataapi.py {ev.slug}\n"
+            f"  python src/clean_polymarket_dataapi.py {ev.slug}")
+    if not ev.kalshi_clean_csv.exists():
+        raise SystemExit(f"No Kalshi clean tape for {ev.slug}.")
     k = pd.read_csv(ev.kalshi_clean_csv, usecols=cols)
-    p = pd.read_csv(ev.poly_subgraph_clean_csv, usecols=cols)
+    p = pd.read_csv(poly_path, usecols=cols)
 
     lo = max(int(k.unix_ts.min()), int(p.unix_ts.min()))
     hi = min(int(k.unix_ts.max()), int(p.unix_ts.max()))

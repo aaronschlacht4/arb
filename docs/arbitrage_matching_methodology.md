@@ -108,10 +108,22 @@ lines 26–201):
 
 3. **Sort each venue for deterministic consumption order:**
    - Kalshi: `(timestamp, trade_id string)`
-   - Poly: `(timestamp, tx string, logIndex int)`
+   - Poly: `(timestamp, tx string, logIndex int)` where the id carries a
+     logIndex (RPC source), else `(timestamp, id)`.
 
    This tie-break matters: when many trades share a timestamp, it fixes *which*
    one is consumed first, so the output is reproducible.
+
+   > **Polymarket row granularity depends on the source, and it moves the
+   > headline number.** The on-chain and subgraph sources emit one row per
+   > matched **maker-order fill**; the live Data API v2 source emits one row per
+   > **taker order**, which is roughly half as many rows carrying the same total
+   > volume (measured: 40,823 vs 21,429 rows, share totals within 0.06%).
+   > Because the matcher depletes whole rows, chunkier rows match differently:
+   > on `mamdani-dem-nomination` the Net moved $25,934 → $26,186 (+1.0%) with no
+   > change to the algorithm. **Do not diff a v2-sourced Net against a
+   > pre-migration one as though it were a regression.** See
+   > `notes/polymarket_v2_migration.md`.
 
 4. **A merged, sorted file** (`kalshi_poly_merged_sorted_for_arb.csv`) interleaves
    both venues by `(timestamp, id)` — this is the canonical input the matcher
