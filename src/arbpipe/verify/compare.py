@@ -8,7 +8,7 @@ subgraph gave one row per maker fill). The question that then matters is not
 granularity explains". This script answers that in one place instead of being
 re-derived by hand each time.
 
-    python src/compare_runs.py presidential-2024 presidential-2024-v2
+    python arb.py compare presidential-2024 presidential-2024-v2
 
 WHAT IT COMPARES, and why each line is the one worth looking at:
 
@@ -40,8 +40,8 @@ import argparse
 import csv
 import sys
 
-from eventlib import load_event
-from validate_event import gamma_volume_shares
+from arbpipe.eventlib import load_event
+from arbpipe.verify.validate import gamma_volume_shares
 
 OK, BAD, WARN = "  [ok]  ", "  [FAIL]", "  [warn]"
 

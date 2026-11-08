@@ -13,7 +13,7 @@ Key facts we verified empirically before writing this:
   - No authentication is required to read trades.
 
 Run (event-driven — ticker + output path come from events/<slug>/event.json):
-    python src/fetch_kalshi_trades.py mamdani-dem-nomination
+    python arb.py fetch-kalshi mamdani-dem-nomination
 """
 
 import argparse
@@ -24,7 +24,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from eventlib import (load_event, read_checkpoint, salvage_tape,
+from arbpipe.eventlib import (load_event, read_checkpoint, salvage_tape,
                       tail_json_lines, truncate_tape, write_checkpoint)
 
 BASE_URL = "https://api.elections.kalshi.com/trade-api/v2"

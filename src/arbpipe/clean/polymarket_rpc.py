@@ -23,7 +23,7 @@ KEY DESIGN DECISIONS (verified empirically against the Goldsky subgraph):
      poly id and use it for the within-second consumption tie-break.
 
 Run:
-    python src/clean_polymarket_rpc.py mamdani-dem-nomination
+    python arb.py clean-poly-rpc mamdani-dem-nomination
 """
 
 import csv
@@ -31,7 +31,7 @@ import json
 import sys
 from datetime import datetime, timezone
 
-from eventlib import load_event
+from arbpipe.eventlib import load_event
 
 # Shared cross-venue schema + log_index (RPC exposes it; subgraph does not).
 FIELDS = [

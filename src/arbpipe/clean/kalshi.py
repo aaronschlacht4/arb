@@ -45,7 +45,7 @@ WHY `side` IS ALWAYS "BUY" (corrected 2026-07-12 — this was previously wrong):
   (Downstream is unaffected: merge_for_arb.py derives its own side from `outcome`.)
 
 Run (event-driven — ticker + paths from events/<slug>/event.json):
-    python src/clean_kalshi_trades.py mamdani-dem-nomination
+    python arb.py clean-kalshi mamdani-dem-nomination
 """
 
 import argparse
@@ -53,7 +53,7 @@ import csv
 import json
 from datetime import datetime, timezone
 
-from eventlib import load_event
+from arbpipe.eventlib import load_event
 
 # Shared cross-venue schema (must stay identical in clean_polymarket_*.py).
 FIELDS = [

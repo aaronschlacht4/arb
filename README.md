@@ -66,16 +66,20 @@ They are not complete market histories — see their `event.json`.
 Give it the two markets; it returns the whole dataset and the charts.
 
 ```bash
-python src/run_event.py \
+python arb.py run \
   --kalshi KXMAYORNYCPARTY-25-D \
   --poly   https://polymarket.com/event/nyc-mayor/will-zohran-mamdani-win-the-2025-nyc-mayoral-election
 ```
 
+`arb.py` is the only entry point you need; it puts `src/` on `sys.path`, so
+**nothing has to be installed first**. `python arb.py` on its own lists
+every stage.
+
 `--poly` takes a Polymarket URL, a market slug, or a `0x…` condition id. The
 Kalshi ticker and the Polymarket market are looked up in the venues' metadata
 APIs, `events/<slug>/event.json` is written for you, and every stage runs in
-order. Re-run a known event with `python src/run_event.py <slug>`, or sweep all
-of them with `--all`.
+order. Re-run a known event with `python arb.py run <slug>` (or just
+`python arb.py <slug>`), or sweep all of them with `--all`.
 
 A stage whose output exists is skipped, so a re-run is cheap and an interrupted
 run resumes. `--force` re-runs the derived stages but never re-downloads or
@@ -128,26 +132,31 @@ A machine-readable index of the last run lands at
 
 ## Pipeline
 
-```
-resolve_market.py             market ids -> events/<slug>/event.json
-fetch_kalshi_trades.py        Kalshi historical trades    -> raw/*.jsonl
-fetch_polymarket_dataapi.py   Polymarket trades (v2 API)  -> raw/*.jsonl[.gz]
-clean_kalshi_trades.py        raw -> clean/*.csv   (shared cross-venue schema)
-clean_polymarket_dataapi.py   raw -> clean/*.csv   (same schema)
-validate_event.py             reconcile both tapes against independent sources
-merge_for_arb.py              clean tapes -> the 4 sorted-for-arb CSVs
-run_arbitrage.py              -> results/arbitrage_final.csv + matched_trades.csv
-results_summary.py            -> results/results.txt
-make_charts.py                -> results/charts.html + 3 PNGs
-analyze_sync.py               cross-venue lead-lag / sync timing (diagnostic)
-compare_runs.py               two events, same market pair, different sources
-run_event.py                  runs all of the above in order
-```
+| `arb.py` stage | module | does |
+|---|---|---|
+| `resolve` | `arbpipe.resolve` | market ids -> `events/<slug>/event.json` |
+| `fetch-kalshi` | `arbpipe.fetch.kalshi` | Kalshi historical trades -> `raw/*.jsonl` |
+| `fetch-poly` | `arbpipe.fetch.polymarket_dataapi` | Polymarket trades (v2 API) -> `raw/*.jsonl[.gz]` |
+| `clean-kalshi` | `arbpipe.clean.kalshi` | raw -> `clean/*.csv` (shared cross-venue schema) |
+| `clean-poly` | `arbpipe.clean.polymarket_dataapi` | raw -> `clean/*.csv` (same schema) |
+| `validate` | `arbpipe.verify.validate` | reconcile both tapes against independent sources |
+| `merge` | `arbpipe.arbitrage.merge` | clean tapes -> the 4 sorted-for-arb CSVs |
+| `match` | `arbpipe.arbitrage.match` | -> `results/arbitrage_final.csv` + `matched_trades.csv` |
+| `summary` | `arbpipe.arbitrage.summary` | -> `results/results.txt` |
+| `charts` | `arbpipe.report.charts` | -> `results/charts.html` + 3 PNGs |
+| `sync` | `arbpipe.report.sync` | cross-venue lead-lag / sync timing (diagnostic) |
+| `compare` | `arbpipe.verify.compare` | two events, same market pair, different sources |
+| `run` | `arbpipe.cli` | runs all of the above in order |
+
+Two more are not part of a run: `fetch-poly-rpc` / `clean-poly-rpc`
+(`arbpipe.fetch.polymarket_rpc`) read Polymarket from the chain via RPC as a
+fallback source, and `reference-match` (`arbpipe.verify.reference_matcher`)
+re-demonstrates that our matcher reproduces the reference run.
 
 `compare_runs.py` exists for the re-collections forced by the V2 migration:
 
 ```bash
-python src/compare_runs.py presidential-2024 presidential-2024-v2
+python arb.py compare presidential-2024 presidential-2024-v2
 ```
 
 It checks the two events' configs match first (a differing `start_ts` alone can
@@ -160,20 +169,25 @@ so it can gate a re-collection.
 Stage by stage, if you want to drive it manually:
 
 ```bash
-python src/resolve_market.py --kalshi <TICKER> --poly <url|slug|0x…>
-python src/fetch_kalshi_trades.py       <slug>
-python src/clean_kalshi_trades.py       <slug>
-python src/fetch_polymarket_dataapi.py  <slug>
-python src/clean_polymarket_dataapi.py  <slug>
-python src/validate_event.py            <slug>
-python src/merge_for_arb.py             <slug>
-python src/run_arbitrage.py             <slug>
-python src/results_summary.py           <slug>
-python src/make_charts.py               <slug>
+python arb.py resolve --kalshi <TICKER> --poly <url|slug|0x…>
+python arb.py fetch-kalshi  <slug>
+python arb.py clean-kalshi  <slug>
+python arb.py fetch-poly    <slug>
+python arb.py clean-poly    <slug>
+python arb.py validate      <slug>
+python arb.py merge         <slug>
+python arb.py match         <slug>
+python arb.py summary       <slug>
+python arb.py charts        <slug>
 ```
+
+Each is an ordinary module, so `cd src && python -m arbpipe.fetch.kalshi
+<slug>` is equivalent — that is exactly what the orchestrator runs
+internally.
 
 ### Deprecated Polymarket paths
 
+These live in **`src/arbpipe/legacy/`** and have their own README there.
 `fetch_polymarket_subgraph.py`, `combine_subgraph_parts.py` and
 `clean_polymarket_subgraph.py` read the **Goldsky orderbook subgraph, which
 Polymarket's V2 migration retired (2026-11-04)**. The endpoint now returns
@@ -193,20 +207,43 @@ tapes.
 ## Layout
 
 ```
+arb.py                  single entry point — run this
+pyproject.toml          package metadata, optional extras, pytest config
+
+src/arbpipe/            the pipeline, as an importable package
+  cli.py                orchestrator: runs every stage in order
+  eventlib.py           event config + EVERY output path
+  portfolio.py          the (y, z) cash/position model
+  resolve.py            market lookup -> event.json
+  fetch/                kalshi.py  polymarket_dataapi.py  polymarket_rpc.py
+  clean/                kalshi.py  polymarket_dataapi.py  polymarket_rpc.py
+  arbitrage/            merge.py  match.py  summary.py
+  report/               charts.py  sync.py  charts_template.html
+  verify/               validate.py  compare.py  reference_matcher.py
+  legacy/               DEAD sources, kept as provenance (see its README)
+
+scripts/                shell helpers for the sharded RPC/subgraph runs
+tests/                  pytest suite
+docs/                   arbitrage matching methodology
+notes/                  data dictionary, V2 migration, validation, sync timing
+
 events/<slug>/
   event.json    market ids, exchange, window, resolution, notes   [versioned]
   raw/          verbatim API/chain records, never modified         [gitignored]
   clean/        trade-level CSVs, shared schema                    [gitignored]
   results/      arb pairs, matched trades, results.txt, charts     [versioned]
-  reference/    outputs to compare against (e.g. the RPC-derived run)
-src/            the pipeline (see above)
-notes/          data dictionary, validation, sync timing
-docs/           arbitrage matching methodology
+  reference/    the reference run's outputs, to compare against    [versioned]
 ```
 
+Why the `src/` layout: it keeps importable code out of the project root, so
+`events/`, `docs/` and `notes/` can never shadow a module. `arb.py` adds
+`src/` to `sys.path`, so no install step is needed; `pip install -e .` also
+works and then gives you an `arbpipe` console command.
+
 `raw/` and `clean/` are gitignored (too large) but **fully regenerable** from
-`event.json` via `src/fetch_*` + `src/clean_*`. `results/merged_sorted_for_arb.csv`
-is likewise regenerable and not versioned.
+`event.json` via the fetch + clean stages. `results/merged_sorted_for_arb.csv`
+is likewise regenerable and not versioned, and neither is its byte-identical
+`kalshi_poly_merged_sorted_for_arb.csv` twin.
 
 Large Polymarket tapes are stored **gzipped** (`"poly_raw_gzip": true` in
 `event.json`). The records are byte-identical — one verbatim JSON object per line —

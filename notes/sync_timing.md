@@ -1,6 +1,6 @@
 # When do the two venues sync? (popvote-2024)
 
-Reproduce with: `python src/analyze_sync.py popvote-2024`
+Reproduce with: `python arb.py sync popvote-2024`
 
 Overlap window: 2024-10-07 .. 2024-11-11 (Kalshi didn't list this contract until
 Oct 7, 2024).
@@ -54,7 +54,7 @@ evidence the markets are unrelated. Two traps it sets:
 
 ## Consequence for `window_seconds` (currently 300)
 
-`merge_for_arb.py` treats a Kalshi trade and a Polymarket trade within
+`arbpipe.arbitrage.merge` treats a Kalshi trade and a Polymarket trade within
 `window_seconds` as **simultaneous**. Two problems at 300s:
 
 1. **300s is ~3.1× the active-regime half-life (97s).** A pair at the edge of the

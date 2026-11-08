@@ -63,8 +63,8 @@ Row fields: `transaction_hash`, `timestamp`, `price`, `size`, `side`,
    returns 0 rows and `has_more: false`, which is *indistinguishable from
    end-of-data*. A naive cursor-follow therefore collects exactly one page and
    then reports success with a 1000-trade tape.
-   → `fetch_polymarket_dataapi.py` re-sends `condition_id` **and**
-   `taker_only` on every single page, and `validate_event.py` checks the tape's
+   → `arbpipe.fetch.polymarket_dataapi` re-sends `condition_id` **and**
+   `taker_only` on every single page, and `arbpipe.verify.validate` checks the tape's
    head against the API's head to catch a regression.
 
 2. **`asset_id` is silently ignored.** Filtering by token id returns HTTP 200
@@ -99,7 +99,7 @@ to the API's default cannot silently double our tape.
 
 ## Why the new cleaner is simpler
 
-`clean_polymarket_subgraph.py` undoes three artifacts of the old orderbook feed.
+`arbpipe.legacy.clean_polymarket_subgraph` undoes three artifacts of the old orderbook feed.
 **None applies to v2, and applying any of them would corrupt the tape:**
 
 | Subgraph correction | v2 reality |
@@ -169,7 +169,7 @@ question** as *"Mamdani wins"* — Kalshi sat near 0.90 while Polymarket sat nea
 0.20. The matcher reads that 70-point basis as enormous free money.
 `start_ts: 1750824000` exists to cut that period off.
 
-The tell is in `validate_event.py`'s overlap report: a max daily gap of **+0.86**
+The tell is in `arbpipe.verify.validate`'s overlap report: a max daily gap of **+0.86**
 rather than a few cents. A large one-sided gap means the two contracts are not
 the same question, not that you found an arbitrage.
 
@@ -184,7 +184,7 @@ GET https://gamma-api.polymarket.com/markets?condition_ids=<0x…>&closed=true
 
 `volumeNum` is in **shares**, computed by Gamma's indexer independently of the
 trades we paged. On `mamdani-dem-nomination`: our tape 17,848,934 shares vs
-Gamma 17,848,349 — ratio 1.0000. `validate_event.py` fails above 1% drift.
+Gamma 17,848,349 — ratio 1.0000. `arbpipe.verify.validate` fails above 1% drift.
 
 Gamma agrees closely on three of the four markets, which is what makes the one
 disagreement interpretable rather than just noise:
@@ -216,7 +216,7 @@ a settled market otherwise looks nonexistent.
 ### The direction of the gap is the diagnosis
 
 A truncated fetch can only **lose** volume; it can never invent any. So the two
-directions mean different things, and `validate_event.py` treats them
+directions mean different things, and `arbpipe.verify.validate` treats them
 differently:
 
 - **shares < Gamma** — trades are missing. **FAIL.** This is the truncation
@@ -277,7 +277,7 @@ Two corollaries worth keeping:
   before the fetch finished). The v2 feed emits precisely one row per
   transaction; the maker view emits 1.165.
 
-**So `validate_event.py` only FAILS on `shares < Gamma`.** Failing on an excess
+**So `arbpipe.verify.validate` only FAILS on `shares < Gamma`.** Failing on an excess
 would mean rejecting correct data on a worse oracle's word. If you hit an
 excess on some other market, do what was done here: re-collect from a second
 source and trust agreement between two over either one against Gamma.
@@ -288,7 +288,7 @@ Kept because each took real work, and because a future excess should not
 re-tread them:
 
 - *Shard-boundary double-counting.* `presidential-2024` is the only tape
-  fetched in parallel time shards, but `combine_subgraph_parts.py` dedupes by
+  fetched in parallel time shards, but `arbpipe.legacy.combine_subgraph_parts` dedupes by
   record `id` and the clean tape has **zero duplicate trade_ids**.
 - *neg-risk accounting.* `popvote-2024` clears through the same neg-risk
   exchange and matches Gamma exactly.
@@ -303,7 +303,7 @@ re-tread them:
   the 37.2M excess — but it is an ordinary trader across 5,989 rows, and the
   top 8 takers together are under 11% of volume.
 
-## Metadata resolution (for `resolve_market.py`)
+## Metadata resolution (for `arbpipe.resolve`)
 
 | Need | Endpoint | Trap |
 |---|---|---|
@@ -312,7 +312,7 @@ re-tread them:
 | slug → condition id | `gamma-api…/markets?slug=<s>&closed=true` | Needs `closed=true` for settled markets. |
 | condition → token pair | `data-api…/v2/tokens?condition=<0x…>` | Also gives `neg_risk`, `final_price`, `resolved`. |
 
-`resolve_market.py` orders token ids by each token's own `outcome` label, never
+`arbpipe.resolve` orders token ids by each token's own `outcome` label, never
 by list position: a market that listed No first would otherwise invert the whole
 tape, turning every price `p` into `1-p`.
 

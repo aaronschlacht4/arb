@@ -4,7 +4,7 @@ pipeline. Every stage (fetch -> clean -> merge -> arbitrage) imports this so the
 same code runs on any event by pointing at its `events/<slug>/event.json`.
 
 Usage:
-    from eventlib import load_event
+    from arbpipe.eventlib import load_event
     ev = load_event("mamdani-nyc-mayor")   # or a path to an event.json
     ev.kalshi_ticker, ev.poly_condition_id, ev.window_seconds, ev.resolution
     ev.raw_dir, ev.clean_dir, ev.results_dir
@@ -13,7 +13,7 @@ Usage:
     ev.merged_csv, ev.arb_final_csv, ev.matched_trades_csv
 
 CLI convention: pass the event slug as the first argument to any stage script,
-e.g.  `python src/merge_for_arb.py mamdani-nyc-mayor`. Defaults to the single
+e.g.  `python arb.py merge mamdani-nyc-mayor`. Defaults to the single
 event if only one exists under events/.
 """
 import gzip
@@ -22,7 +22,7 @@ import os
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 EVENTS_DIR = ROOT / "events"
 
 

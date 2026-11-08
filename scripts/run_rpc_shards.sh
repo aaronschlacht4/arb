@@ -1,16 +1,17 @@
 #!/bin/bash
 # Parallel Alchemy RPC scan for presidential-2024: split the block range into
-# N disjoint shards, one fetch_polymarket_rpc.py worker per shard, each with
-# its own output file (.partN) and checkpoint — so the whole thing is
+# N disjoint shards, one arbpipe.fetch.polymarket_rpc worker per shard, each
+# with its own output file (.partN) and checkpoint — so the whole thing is
 # resumable per-shard: re-running this script continues where each worker
-# left off (same supervisor idea as supervise_scan.sh, parallelised).
+# left off.
 #
-# Requires ALCHEMY_POLYGON_URL in arb/.env (never committed).
+# Requires ALCHEMY_POLYGON_URL in the project root .env (never committed).
+# Run it from anywhere: it cds to the project root itself.
 #
 # When all shards finish, combine and clean:
 #   cat events/presidential-2024/raw/polymarket_rpc_orderfilled_*.part*.jsonl \
 #     > events/presidential-2024/raw/polymarket_rpc_orderfilled_0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917.jsonl
-#   python src/clean_polymarket_rpc.py presidential-2024
+#   python arb.py clean-poly-rpc presidential-2024
 # (row order across parts doesn't matter — the cleaner sorts.)
 
 set -u
@@ -39,7 +40,7 @@ for i in $(seq 1 $WORKERS); do
   [ "$HI" -gt "$END" ] && HI=$END
   LOG=$RAWDIR/rpc_scan_part$i.log
   echo "[shards] part$i: blocks $LO-$HI  (log: $LOG)"
-  python src/fetch_polymarket_rpc.py "$EVENT" \
+  python arb.py fetch-poly-rpc "$EVENT" \
       --start "$LO" --end "$HI" --suffix ".part$i" >> "$LOG" 2>&1 &
   PIDS+=($!)
 done

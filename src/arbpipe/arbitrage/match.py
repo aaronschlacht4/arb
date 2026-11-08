@@ -14,12 +14,12 @@ Algorithm (faithful port of arbitrage.py; see docs/arbitrage_matching_methodolog
     id is `<tx>;<logIndex>`, else (timestamp, id) for subgraph-sourced ids.
 
 Run:
-    python src/run_arbitrage.py mamdani-dem-nomination
+    python arb.py match mamdani-dem-nomination
 """
 import csv
 import sys
 
-from eventlib import load_event
+from arbpipe.eventlib import load_event
 
 EPS = 1e-4
 

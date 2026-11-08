@@ -21,8 +21,8 @@ It also reports each token's fill count against the subgraph's OWN
 of the fills we paged — so it catches a shard that quietly came up short.
 
 Run:
-    python src/combine_subgraph_parts.py popvote-2024
-    python src/combine_subgraph_parts.py popvote-2024 --force   # replace output
+    cd src && python -m arbpipe.legacy.combine_subgraph_parts popvote-2024    # DEAD SOURCE - see legacy/README.md
+    cd src && python -m arbpipe.legacy.combine_subgraph_parts popvote-2024 --force   # replace output    # DEAD SOURCE - see legacy/README.md
 """
 
 import argparse
@@ -30,8 +30,8 @@ import hashlib
 import json
 from collections import Counter
 
-from eventlib import load_event, open_raw, raw_path
-from fetch_polymarket_subgraph import load_endpoint
+from arbpipe.eventlib import load_event, open_raw, raw_path
+from arbpipe.legacy.fetch_polymarket_subgraph import load_endpoint
 
 # The subgraph's `orderbook` entity was this script's completeness oracle, via
 # a `gql_orderbook` helper that lived in validate_event.py. Polymarket's V2
@@ -121,7 +121,7 @@ def main() -> None:
     # this source. Say so rather than appear to have checked.
     print("\ncompleteness: NOT CHECKED — the subgraph's orderbook counters "
           "were retired with the endpoint.")
-    print("  Validate the CLEANED tape instead:  python src/validate_event.py "
+    print("  Validate the CLEANED tape instead:  python arb.py validate "
           f"{ev.slug}")
     print("  (it reconciles share volume against Gamma's independent counter)")
     if args.allow_partial:

@@ -85,7 +85,7 @@ Facts established empirically before writing this (all re-checkable):
   unique even if one tx ever carries two taker orders.
 
 Run (condition id + output path come from events/<slug>/event.json):
-    python src/fetch_polymarket_dataapi.py mamdani-nyc-mayor
+    python arb.py fetch-poly mamdani-nyc-mayor
 """
 
 import argparse
@@ -97,7 +97,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from eventlib import (load_event, open_raw, raw_path, salvage_tape,
+from arbpipe.eventlib import (load_event, open_raw, raw_path, salvage_tape,
                       read_checkpoint, tail_json_lines, tape_size,
                       truncate_tape, write_checkpoint)
 

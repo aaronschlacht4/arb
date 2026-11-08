@@ -6,7 +6,7 @@ the "Will Zohran Mamdani win the Democratic Primary?" market, and how it produce
 
 This document is a detailed walkthrough of her method — every step, why it's
 there, and worked examples on the real data. Our reproduction lives in
-[`src/build_arbitrage_matched_trades.py`](../src/build_arbitrage_matched_trades.py),
+[`arbpipe.verify.reference_matcher`](../src/arbpipe/verify/reference_matcher.py),
 which is a faithful port verified to reproduce all 122,635 rows of
 `matched_trades.csv` exactly.
 
@@ -269,7 +269,7 @@ order book into a clean "was there capturable mispricing?" signal.
 
 ## 10. Reproducing it
 
-`src/build_arbitrage_matched_trades.py` ports the two-pointer matcher and runs it
+`arbpipe.verify.reference_matcher` ports the two-pointer matcher and runs it
 on `kalshi_poly_merged_sorted_for_arb.csv`. It reproduces `matched_trades.csv`
 with **0 missing / 0 extra** across all 122,635 rows (content-identical; only the
 within-second row *ordering* can differ, because her output order uses a

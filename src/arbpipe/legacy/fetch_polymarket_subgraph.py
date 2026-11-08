@@ -41,8 +41,8 @@ notes/polymarket_validation.md. Override with POLYMARKET_SUBGRAPH_URL in .env.
 Token ids + output path come from events/<slug>/event.json.
 
 Run:
-    python src/fetch_polymarket_subgraph.py popvote-2024
-    SUBGRAPH_PAGE=750 python src/fetch_polymarket_subgraph.py popvote-2024
+    cd src && python -m arbpipe.legacy.fetch_polymarket_subgraph popvote-2024    # DEAD SOURCE - see legacy/README.md
+    SUBGRAPH_PAGE=750 python -m arbpipe.legacy.fetch_polymarket_subgraph popvote-2024   # from src/
 """
 
 import argparse
@@ -53,9 +53,9 @@ import urllib.error
 import urllib.request
 from pathlib import Path
 
-from eventlib import load_event, open_raw, raw_path
+from arbpipe.eventlib import load_event, open_raw, raw_path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 ENV_PATH = PROJECT_ROOT / ".env"
 
 # Public, no-auth subgraph (Goldsky). Overridable via .env for a private host.

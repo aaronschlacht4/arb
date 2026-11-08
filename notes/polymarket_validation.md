@@ -1,6 +1,6 @@
 # Polymarket validation reference (Mamdani NYC-mayor market)
 
-The raw `eth_getLogs` scan (`src/fetch_polymarket_rpc.py`) is the PRIMARY data
+The raw `eth_getLogs` scan (`arbpipe.fetch.polymarket_rpc`) is the PRIMARY data
 source (on-chain `OrderFilled` logs). This subgraph is used ONLY to VALIDATE that
 the scan + cleaning produced a complete, correct trade-level dataset.
 

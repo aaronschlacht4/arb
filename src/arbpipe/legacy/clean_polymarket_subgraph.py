@@ -43,7 +43,7 @@ HOW (2) AND (3) WERE ESTABLISHED (not guessed — project Rule 2):
     the un-flipped value in 0/434.
 
 Run (event-driven — condition/tokens/paths from events/<slug>/event.json):
-    python src/clean_polymarket_subgraph.py mamdani-dem-nomination
+    cd src && python -m arbpipe.legacy.clean_polymarket_subgraph mamdani-dem-nomination    # DEAD SOURCE - see legacy/README.md
 """
 
 import csv
@@ -51,7 +51,7 @@ import json
 import sys
 from datetime import datetime, timezone
 
-from eventlib import load_event, open_raw, raw_path
+from arbpipe.eventlib import load_event, open_raw, raw_path
 
 # Shared cross-venue schema (must stay identical in clean_kalshi_trades.py).
 FIELDS = [

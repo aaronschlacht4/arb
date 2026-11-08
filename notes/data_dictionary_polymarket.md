@@ -11,9 +11,9 @@ new fetch**; the other two are kept so pre-migration tapes reproduce. See
 
 | Source | Raw file | Cleaner | Row granularity | Status |
 |---|---|---|---|---|
-| `dataapi` | `polymarket_dataapi_trades_<cid>.jsonl` | `clean_polymarket_dataapi.py` | one row per **taker order** | **live** |
-| `rpc` | `polymarket_rpc_orderfilled_<cid>.jsonl` | `clean_polymarket_rpc.py` | one row per **maker-order fill** | needs `ALCHEMY_POLYGON_URL` |
-| `subgraph` | `polymarket_subgraph_orderfilled_<cid>.jsonl` | `clean_polymarket_subgraph.py` | one row per **maker-order fill** | **dead** (V2 migration) |
+| `dataapi` | `polymarket_dataapi_trades_<cid>.jsonl` | `arbpipe.clean.polymarket_dataapi` | one row per **taker order** | **live** |
+| `rpc` | `polymarket_rpc_orderfilled_<cid>.jsonl` | `arbpipe.clean.polymarket_rpc` | one row per **maker-order fill** | needs `ALCHEMY_POLYGON_URL` |
+| `subgraph` | `polymarket_subgraph_orderfilled_<cid>.jsonl` | `arbpipe.legacy.clean_polymarket_subgraph` | one row per **maker-order fill** | **dead** (V2 migration) |
 
 `eventlib.Event.poly_clean_csv()` picks whichever exists, preferring
 `rpc` → `dataapi` → `subgraph`.
@@ -25,7 +25,7 @@ comparable across sources; share and dollar volumes are.
 
 - **Raw (rpc)**: one `OrderFilled` log per line, verbatim from the chain (via
   Alchemy `eth_getLogs`). Never modified.
-- **Clean (rpc)**: produced by `src/clean_polymarket_rpc.py`. One row per
+- **Clean (rpc)**: produced by `arbpipe.clean.polymarket_rpc`. One row per
   **maker-order fill**.
 
 ## Row selection (the key transformation)
@@ -41,7 +41,7 @@ double-counting. Verified against the Goldsky subgraph (it keeps both; its
 
 ALL clean tapes — `polymarket_rpc_trades`, `polymarket_subgraph_trades`, and
 `kalshi_trades` — use the SAME columns, so they can be stacked/compared directly.
-Venue-specific columns are blank where they don't apply. `clean_kalshi_trades.py`
+Venue-specific columns are blank where they don't apply. `arbpipe.clean.kalshi`
 and `clean_polymarket_*.py` must keep `FIELDS` identical.
 
 | Column | Meaning (identical across venues) | Polymarket | Kalshi |
@@ -90,7 +90,7 @@ Sanity anchor: the corrected clean tape for the Trump popular-vote market sums t
 (aggressor) convention. Verified on 434 trades matched to the public data-api by
 `(tx, token)`: flipped agrees 434/434, un-flipped 0/434.
 
-This affects the **subgraph** cleaner only. `clean_polymarket_rpc.py` reads the
+This affects the **subgraph** cleaner only. `arbpipe.clean.polymarket_rpc` reads the
 asset ids straight from the log and was already correct.
 
 ### Why Kalshi `side` is always `BUY` (corrected 2026-07-12)
@@ -113,7 +113,7 @@ always `BUY` and `outcome` carries the direction. A Polymarket "SELL YES" is the
 same economic event as a Kalshi "BUY NO".
 
 This never affected `price`, `quantity`, `yes_price`, or the arbitrage results —
-`merge_for_arb.py` derives its own side from `outcome`, not from this column.
+`arbpipe.arbitrage.merge` derives its own side from `outcome`, not from this column.
 
 ## Conventions
 - USDC assetId = `0`; all on-chain amounts are 6-decimal integers (÷1e6).

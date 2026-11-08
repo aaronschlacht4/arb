@@ -14,8 +14,8 @@ The scan is RESUMABLE: a checkpoint file records the last fully-scanned block,
 so re-running continues where it left off and appends to the same raw file.
 
 Run (event-driven; block range from event.json or --start/--end):
-    python src/fetch_polymarket_rpc.py mamdani-dem-nomination
-    python src/fetch_polymarket_rpc.py mamdani-dem-nomination --start 66069504 --end 73352394
+    python arb.py fetch-poly-rpc mamdani-dem-nomination
+    python arb.py fetch-poly-rpc mamdani-dem-nomination --start 66069504 --end 73352394
 """
 
 import argparse
@@ -26,9 +26,9 @@ import time
 import urllib.request
 from pathlib import Path
 
-from eventlib import load_event
+from arbpipe.eventlib import load_event
 
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
 ENV_PATH = PROJECT_ROOT / ".env"
 
 ORDER_FILLED_TOPIC = "0xd0a08e8c493f9c94f29311604c9de1b4e8c8d4c06bd0c789af57f2d65bfec0f6"

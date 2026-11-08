@@ -55,7 +55,7 @@ the common case byte-identical to the tx hash while staying collision-proof.
 The suffix is assigned after a deterministic sort, so it is reproducible.
 
 Run:
-    python src/clean_polymarket_dataapi.py mamdani-nyc-mayor
+    python arb.py clean-poly mamdani-nyc-mayor
 """
 
 import csv
@@ -64,7 +64,7 @@ import sys
 from collections import Counter
 from datetime import datetime, timezone
 
-from eventlib import load_event, open_raw, raw_path
+from arbpipe.eventlib import load_event, open_raw, raw_path
 
 # Shared cross-venue schema (must stay identical in clean_kalshi_trades.py).
 FIELDS = [
@@ -141,7 +141,7 @@ def main() -> None:
     if not src.exists():
         raise SystemExit(
             f"Raw file not found: {src}\n"
-            f"Run: python src/fetch_polymarket_dataapi.py {ev.slug}")
+            f"Run: python arb.py fetch-poly {ev.slug}")
 
     n_recs = n_skip = n_wrong_market = 0
     rows: list[tuple] = []

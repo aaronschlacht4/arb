@@ -25,7 +25,7 @@ Checks per venue:
              across venues) and their mean implied probability in it.
 
 Run:
-    python src/validate_event.py popvote-2024
+    python arb.py validate popvote-2024
 """
 
 import csv
@@ -34,7 +34,7 @@ import sys
 import urllib.request
 from collections import Counter
 
-from eventlib import load_event
+from arbpipe.eventlib import load_event
 
 KALSHI_TRADES = "https://api.elections.kalshi.com/trade-api/v2/historical/trades"
 POLY_TRADES = "https://data-api.polymarket.com/v2/trades"

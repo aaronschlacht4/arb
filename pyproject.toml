@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "arbpipe"
+version = "0.2.0"
+description = "Cross-venue prediction-market arbitrage pipeline (Kalshi + Polymarket)"
+requires-python = ">=3.11"
+
+# The pipeline core deliberately uses ONLY the standard library, so a fetch can
+# run on a bare interpreter. matplotlib/numpy are needed just for charts and
+# pandas just for the sync analysis — hence extras rather than hard deps.
+dependencies = []
+
+[project.optional-dependencies]
+charts = ["matplotlib", "numpy"]
+sync = ["pandas"]
+dev = ["pytest"]
+
+[project.scripts]
+arbpipe = "arbpipe.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# charts_template.html ships inside the package; report/charts.py loads it
+# relative to its own __file__, so it must be installed alongside the module.
+[tool.setuptools.package-data]
+arbpipe = ["report/charts_template.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

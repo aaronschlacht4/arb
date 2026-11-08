@@ -2,11 +2,11 @@
 ONE COMMAND, WHOLE PIPELINE. Give it a pair of markets; it gives you back the
 arbitrage dataset and the charts.
 
-    python src/run_event.py --kalshi KXMAYORNYCPARTY-25-D \
+    python arb.py run --kalshi KXMAYORNYCPARTY-25-D \
         --poly https://polymarket.com/event/nyc-mayor/will-zohran-mamdani-win-...
 
-    python src/run_event.py mamdani-dem-nomination        # re-run a known event
-    python src/run_event.py --all                         # every event with a config
+    python arb.py run mamdani-dem-nomination        # re-run a known event
+    python arb.py run --all                         # every event with a config
 
 STAGES (each is the existing single-purpose script, run in order):
     resolve_market            markets          -> events/<slug>/event.json
@@ -52,7 +52,7 @@ import sys
 import time
 from pathlib import Path
 
-from eventlib import EVENTS_DIR, ROOT, load_event, raw_path
+from arbpipe.eventlib import EVENTS_DIR, ROOT, load_event, raw_path
 
 SRC = ROOT / "src"
 
@@ -64,11 +64,15 @@ class StageError(RuntimeError):
 def run(script: str, *args: str, label: str = "") -> None:
     """Run one pipeline stage as a subprocess, streaming its output.
 
+    `script` is a MODULE path, e.g. "arbpipe.fetch.kalshi".
+
     Subprocess rather than import-and-call: every stage is already a working
     CLI with its own argument handling, and a stage that dies (or is killed on
     a huge market) must not take the orchestrator down with it.
     """
-    cmd = [sys.executable, str(SRC / script), *args]
+    # "-m" with cwd=SRC puts src/ on sys.path, so "arbpipe.*" resolves
+    # without the package needing to be pip-installed first.
+    cmd = [sys.executable, "-m", script, *args]
     print(f"\n{'=' * 62}\n>> {label or script}\n{'=' * 62}", flush=True)
     t0 = time.time()
     proc = subprocess.run(cmd, cwd=str(SRC))
@@ -101,7 +105,7 @@ def resolve(args) -> str:
         extra += ["--gzip-raw"]
     if args.force:
         extra += ["--force"]
-    run("resolve_market.py", "--kalshi", args.kalshi, "--poly", args.poly,
+    run("arbpipe.resolve", "--kalshi", args.kalshi, "--poly", args.poly,
         *extra, label="resolve markets -> event.json")
 
     # resolve_market derives the slug when we did not supply one; find it by
@@ -140,12 +144,12 @@ def pipeline(slug: str, force: bool, validate: bool, charts: bool) -> dict:
         if k_ckpt.exists():
             print(f"\n-- kalshi tape is partial (checkpoint present) — resuming",
                   flush=True)
-        run("fetch_kalshi_trades.py", slug, label="fetch Kalshi trades")
+        run("arbpipe.fetch.kalshi", slug, label="fetch Kalshi trades")
 
     if ev.kalshi_clean_csv.exists() and not force:
         skip("clean kalshi", ev.kalshi_clean_csv)
     else:
-        run("clean_kalshi_trades.py", slug, label="clean Kalshi trades")
+        run("arbpipe.clean.kalshi", slug, label="clean Kalshi trades")
 
     # --- Polymarket -------------------------------------------------------
     # An event collected BEFORE the V2 migration already has an rpc or subgraph
@@ -169,28 +173,28 @@ def pipeline(slug: str, force: bool, validate: bool, charts: bool) -> dict:
             skip("fetch polymarket", poly_raw)
         else:
             # Safe mid-tape: the fetcher resumes from its own checkpoint.
-            run("fetch_polymarket_dataapi.py", slug,
+            run("arbpipe.fetch.polymarket_dataapi", slug,
                 label="fetch Polymarket trades")
 
         if ev.poly_dataapi_clean_csv.exists() and not force:
             skip("clean polymarket", ev.poly_dataapi_clean_csv)
         else:
-            run("clean_polymarket_dataapi.py", slug,
+            run("arbpipe.clean.polymarket_dataapi", slug,
                 label="clean Polymarket trades")
 
     # --- validate ---------------------------------------------------------
     if validate:
-        run("validate_event.py", slug, label="validate both tapes")
+        run("arbpipe.verify.validate", slug, label="validate both tapes")
     else:
         print("\n-- skip validate (--skip-validate): a truncated tape will "
               "NOT be caught", flush=True)
 
     # --- arbitrage --------------------------------------------------------
-    run("merge_for_arb.py", slug, label="merge -> sorted-for-arb CSVs")
-    run("run_arbitrage.py", slug, label="match arbitrage pairs")
-    run("results_summary.py", slug, label="results.txt")
+    run("arbpipe.arbitrage.merge", slug, label="merge -> sorted-for-arb CSVs")
+    run("arbpipe.arbitrage.match", slug, label="match arbitrage pairs")
+    run("arbpipe.arbitrage.summary", slug, label="results.txt")
     if charts:
-        run("make_charts.py", slug, label="charts.html + PNGs")
+        run("arbpipe.report.charts", slug, label="charts.html + PNGs")
 
     return manifest(load_event(slug), charts)
 

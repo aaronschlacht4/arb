@@ -19,13 +19,13 @@ Then the overall Net. The hedge check (|z_poly| vs |z_kalshi|) runs as a
 stdout diagnostic. Writes events/<slug>/results/results.txt.
 
 Run:
-    python src/results_summary.py mamdani-nyc-mayor
+    python arb.py summary mamdani-nyc-mayor
 """
 import csv
 import sys
 
-from eventlib import load_event
-from portfolio import Portfolio
+from arbpipe.eventlib import load_event
+from arbpipe.portfolio import Portfolio
 
 
 def main() -> None:

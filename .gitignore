@@ -5,11 +5,15 @@
 # Python
 __pycache__/
 *.pyc
+.pytest_cache/
 .venv/
 venv/
+*.egg-info/
+build/
+dist/
 
 # Per-event bulk data: raw acquisitions and clean tapes are too large for
-# GitHub (up to 550MB) and fully regenerable via src/fetch_* + src/clean_*.
+# GitHub (up to 1GB) and fully regenerable via arbpipe.fetch.* + arbpipe.clean.*.
 # Everything else in events/ IS versioned: event.json, results/, reference/.
 events/*/raw/
 events/*/clean/
@@ -37,3 +41,8 @@ events/*/results/kalshi_poly_merged_sorted_for_arb.csv
 events/presidential-*/results/merged_sorted_for_arb.csv
 events/presidential-*/results/poly_sorted_for_arb.csv
 events/presidential-*/results/kalshi_sorted_for_arb.csv
+
+# arbpipe.verify.reference_matcher writes its reproduction BESIDE the reference
+# files it is checking against. The reference files ARE versioned (they are the
+# provenance for every Net here); the reproduction is derived, so it is not.
+events/*/reference/reproduced_*.csv

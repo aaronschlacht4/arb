@@ -3,7 +3,7 @@ Reproduce Wendy's matched_trades.csv EXACTLY (byte-for-byte on the trade set).
 
 This is a faithful port of her arbitrage.py two-pointer matcher, run on her
 pre-sorted merged input (kalshi_poly_merged_sorted_for_arb.csv). Verified to
-reproduce results_to_compare/matched_trades.csv with 0 missing / 0 extra.
+reproduce reference/matched_trades.csv with 0 missing / 0 extra.
 
 Her algorithm (the parts that differ from a naive kalshi-driven match):
   - TWO-POINTER, earlier-trade-drives: pointers i (kalshi) and j (poly) advance
@@ -25,17 +25,32 @@ Her algorithm (the parts that differ from a naive kalshi-driven match):
 A trade is emitted once (its full, floored original size) iff it was consumed
 in >= 1 match.
 
+WHAT IT IS FOR. This is a CHECK, not part of the pipeline. The maintained
+matcher is `arbpipe.arbitrage.match`; this exists to re-demonstrate that our
+matcher reproduces the reference run, which is the provenance for every Net
+in this repo. It reads the reference run's OWN pre-sorted merged input from
+`events/<slug>/reference/` and writes its output beside it as
+`reproduced_*.csv`, so the reference files are never overwritten.
+
+It needs an event whose `reference/` holds
+`kalshi_poly_merged_sorted_for_arb.csv` — `mamdani-nyc-mayor` is the one that
+does. It also needs RPC-style poly ids (`<tx>;<logIndex>`), which is what the
+reference run used.
+
 Run:
-    python src/build_arbitrage_matched_trades.py
+    python arb.py reference-match mamdani-nyc-mayor
 """
 import csv
+import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-MERGED = ROOT / "data" / "clean" / "results_to_compare" / \
-    "kalshi_poly_merged_sorted_for_arb.csv"
-OUT = ROOT / "data" / "clean" / "arbitrage_matched_trades.csv"
-OUT_FINAL = ROOT / "data" / "clean" / "arbitrage_final.csv"
+from arbpipe.eventlib import load_event
+
+# Set from the event in main(). This script used to hardcode a `data/clean/`
+# layout that no longer exists, which left it unable to run at all.
+MERGED: Path
+OUT: Path
+OUT_FINAL: Path
 
 WINDOW = 300
 EPS = 1e-4
@@ -174,7 +189,24 @@ def match(K, P):
     return ku, pu, records
 
 
+def resolve_paths() -> None:
+    """Point MERGED/OUT/OUT_FINAL at one event's reference/ directory."""
+    global MERGED, OUT, OUT_FINAL
+    ev = load_event(sys.argv[1] if len(sys.argv) > 1 else None)
+    MERGED = ev.reference_dir / "kalshi_poly_merged_sorted_for_arb.csv"
+    if not MERGED.exists():
+        raise SystemExit(
+            f"No reference merged tape for {ev.slug}: {MERGED}  "
+            f"This check needs an event whose reference/ holds the "
+            f"reference run's own pre-sorted input "
+            f"(mamdani-nyc-mayor has one).")
+    # Written BESIDE the reference files, never over them.
+    OUT = ev.reference_dir / "reproduced_matched_trades.csv"
+    OUT_FINAL = ev.reference_dir / "reproduced_arbitrage_final.csv"
+
+
 def main():
+    resolve_paths()
     K, P = load()
     ku, pu, records = match(K, P)
 

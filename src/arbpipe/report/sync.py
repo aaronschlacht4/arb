@@ -35,7 +35,7 @@ WHAT WE MEASURE  (three complementary things — one number would mislead)
      drift is small relative to the arbitrage edge you are trying to detect.
 
 Run:
-    python src/analyze_sync.py popvote-2024
+    python arb.py sync popvote-2024
 """
 
 import argparse
@@ -43,7 +43,7 @@ import argparse
 import numpy as np
 import pandas as pd
 
-from eventlib import load_event
+from arbpipe.eventlib import load_event
 
 # Election night: first results land ~2024-11-06 00:00 UTC (7pm ET Nov 5).
 SHOCK_START = 1730851200
@@ -157,8 +157,8 @@ def main() -> None:
     if poly_path is None:
         raise SystemExit(
             f"No Polymarket clean tape for {ev.slug}. Run:\n"
-            f"  python src/fetch_polymarket_dataapi.py {ev.slug}\n"
-            f"  python src/clean_polymarket_dataapi.py {ev.slug}")
+            f"  python arb.py fetch-poly {ev.slug}\n"
+            f"  python arb.py clean-poly {ev.slug}")
     if not ev.kalshi_clean_csv.exists():
         raise SystemExit(f"No Kalshi clean tape for {ev.slug}.")
     k = pd.read_csv(ev.kalshi_clean_csv, usecols=cols)

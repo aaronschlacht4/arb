@@ -25,8 +25,8 @@ Series are down-sampled to ~700 points via a step-function lookup (value as of
 each grid time), which is what the charts need and keeps a 742k-match event light.
 
 Run:
-    python src/make_charts.py presidential-2024
-    python src/make_charts.py --all
+    python arb.py charts presidential-2024
+    python arb.py charts --all
 """
 
 import argparse
@@ -41,10 +41,11 @@ import matplotlib
 matplotlib.use("Agg")            # headless: write files, never open a window
 import matplotlib.pyplot as plt  # noqa: E402
 
-from eventlib import EVENTS_DIR, ROOT, load_event  # noqa: E402
-from portfolio import Portfolio  # noqa: E402
+from arbpipe.eventlib import EVENTS_DIR, ROOT, load_event  # noqa: E402
+from arbpipe.portfolio import Portfolio  # noqa: E402
 
-TEMPLATE = ROOT / "src" / "charts_template.html"
+# Ships WITH this module, so it is found however the package is invoked.
+TEMPLATE = Path(__file__).resolve().parent / "charts_template.html"
 N_POINTS = 700
 
 # Same palette as the HTML template, so the PNGs and the page match.

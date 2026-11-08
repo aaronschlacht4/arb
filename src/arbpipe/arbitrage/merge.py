@@ -12,7 +12,7 @@ WRITES FOUR FILES (all in events/<slug>/results/):
     poly_sorted_for_arb.csv                 Polymarket's tape alone
 
 The two PER-VENUE files are the reference run's pre-arb views, kept so a run can
-be diffed against `reference/` and `results_to_compare/` column-for-column:
+be diffed against each event's `reference/` directory column-for-column:
 
     id, <venue>_time, <venue>_yes, <venue>_no, <venue>_yes_key,
     <venue>_size, <venue>_size_orig, side, _orig_idx
@@ -53,12 +53,12 @@ Prep applied here (mirrors arbitrage.py's PRE-ARB step):
   - Rows sorted by (timestamp, id).
 
 Run:
-    python src/merge_for_arb.py mamdani-dem-nomination
+    python arb.py merge mamdani-dem-nomination
 """
 import csv
 import sys
 
-from eventlib import load_event
+from arbpipe.eventlib import load_event
 
 
 def poly_id(r: dict) -> str:
@@ -126,8 +126,8 @@ def main() -> None:
     if poly_path is None:
         raise SystemExit(
             f"No Polymarket clean tape found for {ev.slug}. Run:\n"
-            f"  python src/fetch_polymarket_dataapi.py {ev.slug}\n"
-            f"  python src/clean_polymarket_dataapi.py {ev.slug}")
+            f"  python arb.py fetch-poly {ev.slug}\n"
+            f"  python arb.py clean-poly {ev.slug}")
     n_dropped = 0
     with poly_path.open(encoding="utf-8") as f:
         for r in csv.DictReader(f):

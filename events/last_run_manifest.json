@@ -1,68 +1,68 @@
 [
   {
-    "slug": "popvote-2024-v2",
-    "name": "Who wins the 2024 US popular vote? (Kalshi: Republican | Polymarket: Trump)",
-    "kalshi_ticker": "POPVOTE-24-R",
-    "polymarket_condition_id": "0xcd1b6b71a1964f15e2c14809594cbfa0d576270e8ef94c8c24913121097e09e5",
+    "slug": "presidential-2024",
+    "name": "Will Donald Trump win the 2024 US Presidential Election?",
+    "kalshi_ticker": "PRES-2024-DJT",
+    "polymarket_condition_id": "0xdd22472e552920b8438158ea7238bfadfa4f736aa4cee91a6b86c39ead110917",
     "resolution": "YES",
     "window_seconds": 300,
     "files": {
       "kalshi_sorted_for_arb": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\kalshi_sorted_for_arb.csv",
-        "bytes": 3081873,
-        "rows": 37480
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\kalshi_sorted_for_arb.csv",
+        "bytes": 23957273,
+        "rows": 287494
       },
       "poly_sorted_for_arb": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\poly_sorted_for_arb.csv",
-        "bytes": 17893763,
-        "rows": 158267
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\poly_sorted_for_arb.csv",
+        "bytes": 499039288,
+        "rows": 2727423
       },
       "kalshi_poly_merged_sorted_for_arb": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\kalshi_poly_merged_sorted_for_arb.csv",
-        "bytes": 19068872,
-        "rows": 195747
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\kalshi_poly_merged_sorted_for_arb.csv",
+        "bytes": 487382300,
+        "rows": 3014917
       },
       "merged_sorted_for_arb": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\merged_sorted_for_arb.csv",
-        "bytes": 19068872,
-        "rows": 195747
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\merged_sorted_for_arb.csv",
+        "bytes": 487382300,
+        "rows": 3014917
       },
       "matched_trades": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\matched_trades.csv",
-        "bytes": 6745759,
-        "rows": 72245
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\matched_trades.csv",
+        "bytes": 88541534,
+        "rows": 573439
       },
       "arbitrage_final": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\arbitrage_final.csv",
-        "bytes": 3502086,
-        "rows": 65266
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\arbitrage_final.csv",
+        "bytes": 28328844,
+        "rows": 526419
       },
       "results": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\results.txt",
-        "bytes": 334,
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\results.txt",
+        "bytes": 333,
         "rows": null
       },
       "charts_html": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\charts.html",
-        "bytes": 86643,
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\charts.html",
+        "bytes": 87530,
         "rows": null
       },
       "prices_png": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\prices.png",
-        "bytes": 78799,
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\prices.png",
+        "bytes": 85297,
         "rows": null
       },
       "positions_png": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\positions.png",
-        "bytes": 58704,
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\positions.png",
+        "bytes": 62511,
         "rows": null
       },
       "locked_in_png": {
-        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\popvote-2024-v2\\results\\locked_in.png",
-        "bytes": 49696,
+        "path": "C:\\Users\\aschl\\Downloads\\arb\\arb\\events\\presidential-2024\\results\\locked_in.png",
+        "bytes": 50868,
         "rows": null
       }
     },
-    "net": 490149.96799997427
+    "net": 3049167.698997304
   }
 ]

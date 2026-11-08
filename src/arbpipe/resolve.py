@@ -7,7 +7,7 @@ or a polymarket.com URL); it looks both up in the venues' public metadata APIs
 and writes the event config, with the resolution outcome filled in when the
 market has settled.
 
-    python src/resolve_market.py --kalshi KXMAYORNYCPARTY-25-D \
+    python arb.py resolve --kalshi KXMAYORNYCPARTY-25-D \
         --poly will-zohran-mamdani-win-the-2025-nyc-mayoral-election
 
 ENDPOINT NOTES - each verified live (2026-11-04), and each has a trap that
@@ -47,7 +47,7 @@ import urllib.parse
 import urllib.request
 from datetime import datetime
 
-from eventlib import EVENTS_DIR
+from arbpipe.eventlib import EVENTS_DIR
 
 KALSHI_BASE = "https://api.elections.kalshi.com/trade-api/v2"
 CLOB_BASE = "https://clob.polymarket.com"
