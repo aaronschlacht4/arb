@@ -29,7 +29,7 @@ fi
 
 TOTAL=$(( END - START + 1 ))
 CHUNK=$(( (TOTAL + WORKERS - 1) / WORKERS ))
-RAWDIR=events/$EVENT/raw
+RAWDIR=events/$EVENT/1_raw/polymarket
 mkdir -p "$RAWDIR"
 
 echo "[shards] $TOTAL blocks / $WORKERS workers = $CHUNK blocks each"
